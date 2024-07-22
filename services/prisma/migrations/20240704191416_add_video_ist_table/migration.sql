@@ -1,0 +1,11 @@
+-- CreateTable
+CREATE TABLE "VideoList" (
+    "id" UUID NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "subject" VARCHAR,
+    "title" VARCHAR NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "VideoList_pkey" PRIMARY KEY ("id")
+);

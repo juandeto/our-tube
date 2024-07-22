@@ -1,2 +1,4 @@
 services/.env
 services/node_modules
+
+services/postgres/
