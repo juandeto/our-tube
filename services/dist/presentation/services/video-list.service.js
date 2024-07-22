@@ -54,8 +54,7 @@ class VideoListService {
                         id: id,
                     },
                 });
-                // add users to the response
-                if (!videoList) {
+                if (!(videoList === null || videoList === void 0 ? void 0 : videoList.id)) {
                     return { error: `Video list with id ${id} not found` };
                 }
                 return { result: videoList };

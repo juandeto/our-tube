@@ -31,8 +31,6 @@ class UpdateVideoListDto {
         if (newTitle && typeof newTitle !== 'string') {
             return ['Title must be a string'];
         }
-        if (newStatus) {
-        }
         if (newSubject && typeof newSubject !== 'string') {
             return ['Subject must be a string'];
         }

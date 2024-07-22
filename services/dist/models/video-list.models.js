@@ -6,6 +6,5 @@ exports.STATUS_LIST = {
     PENDING: 'PENDING',
     PLAYING: 'PLAYING',
     PAUSED: 'PAUSED',
-    IN_ADS: 'IN_ADS',
-    DELETED: 'DELETED',
+    ENDED: 'ENDED',
 };

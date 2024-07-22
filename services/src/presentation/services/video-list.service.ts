@@ -58,9 +58,7 @@ export class VideoListService {
         },
       });
 
-      // add users to the response
-
-      if (!videoList) {
+      if (!videoList?.id) {
         return { error: `Video list with id ${id} not found` };
       }
 

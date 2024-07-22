@@ -5,8 +5,7 @@ export const STATUS_LIST = {
   PENDING: 'PENDING',
   PLAYING: 'PLAYING',
   PAUSED: 'PAUSED',
-  IN_ADS: 'IN_ADS',
-  DELETED: 'DELETED',
+  ENDED: 'ENDED',
 } as const;
 
 export type STATUS_TYPE = (typeof STATUS_LIST)[keyof typeof STATUS_LIST];

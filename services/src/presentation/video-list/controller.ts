@@ -20,13 +20,13 @@ export class VideoListController {
 
     const { error, result } = await this.videoListService.getVideoList(id);
 
-    if (!error) {
+    if (error) {
       return res
         .status(404)
         .json({ error: `VideoList with id ${id} not found` });
     }
 
-    console.log(`Getting todo id ${id}`, result);
+    console.log(`Getting video-list id ${id}`);
 
     return res.json(result);
   };
@@ -68,7 +68,7 @@ export class VideoListController {
       return res.status(400).json({ errorService });
     }
 
-    console.log(`Record with id ${id} was updated to: `, result);
+    console.log(`Record with id ${id} was updated`);
 
     return res.json(result);
   };
@@ -88,7 +88,7 @@ export class VideoListController {
         .json({ error: `Todo with id ${id} was not deleted` });
     }
 
-    console.log(`Record with id ${id} was deleted: `, result);
+    console.log(`Record with id ${id} was deleted`);
 
     return res.json(result);
   };
