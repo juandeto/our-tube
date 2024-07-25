@@ -51,6 +51,7 @@ export class VideoListService {
   }
 
   public async getVideoList(id: string): Promise<VideoListGetByIdResponse> {
+    console.log('Getting vidoe list');
     try {
       const videoList = await prisma.videoList.findFirst({
         where: {

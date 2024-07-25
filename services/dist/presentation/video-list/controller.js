@@ -25,12 +25,12 @@ class VideoListController {
         this.getVideoListById = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const id = String(req.params.id);
             const { error, result } = yield this.videoListService.getVideoList(id);
-            if (!error) {
+            if (error) {
                 return res
                     .status(404)
                     .json({ error: `VideoList with id ${id} not found` });
             }
-            console.log(`Getting todo id ${id}`, result);
+            console.log(`Getting video-list id ${id}`);
             return res.json(result);
         });
         this.createVideoList = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -70,7 +70,7 @@ class VideoListController {
                     .status(404)
                     .json({ error: `Todo with id ${id} was not deleted` });
             }
-            console.log(`Record with id ${id} was deleted: `, result);
+            console.log(`Record with id ${id} was deleted`);
             return res.json(result);
         });
     }

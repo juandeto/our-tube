@@ -121,7 +121,7 @@ export default function VideoList() {
         1000;
 
       if (seconds > 10) {
-        updatePlayerTime(Math.round(seconds), playbackData.url);
+        updatePlayerTime(Math.round(seconds));
       }
     }
   }, [list, videoStarted, playbackData]);
@@ -222,7 +222,7 @@ export default function VideoList() {
       };
 
       const usernameExists =
-        usersData?.findIndex((u) => u.username === username) !== -1;
+        usersData?.findIndex((u) => u.username === usernameInForm) !== -1;
 
       if (usernameExists) {
         alert('Username already exists. Choose another username.');

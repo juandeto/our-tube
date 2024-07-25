@@ -48,14 +48,14 @@ class VideoListService {
     }
     getVideoList(id) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('Getting vidoe list');
             try {
                 const videoList = yield postgres_1.prisma.videoList.findFirst({
                     where: {
                         id: id,
                     },
                 });
-                // add users to the response
-                if (!videoList) {
+                if (!(videoList === null || videoList === void 0 ? void 0 : videoList.id)) {
                     return { error: `Video list with id ${id} not found` };
                 }
                 return { result: videoList };
@@ -118,9 +118,6 @@ class VideoListService {
                 return { error: `Error deleting video list with id ${id}` };
             }
         });
-    }
-    onVideoListChange(payload) {
-        this.wssService.sendMessage('on-video-list-change', payload);
     }
 }
 exports.VideoListService = VideoListService;
