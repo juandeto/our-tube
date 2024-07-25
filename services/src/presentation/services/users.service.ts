@@ -1,15 +1,13 @@
 import { UuidAdapter } from '../../config/uuid.adapter';
-import { ErrorService, ResponseModel } from '../../models/shared';
 import {
   UserCreateModel,
-  UserGetModel,
   UserModel,
   UserPayloadModel,
   UserRemoveModel,
-  UserUpdateModel,
 } from '../../models/user.models';
 import { STATUS_LIST } from '../../models/video-list.models';
 import { EVENTS } from '../../utils/events.utils';
+import { WssService } from './wss.services';
 
 export class UsersService {
   private readonly _users: Record<string, UserModel[]> = {};
@@ -22,29 +20,13 @@ export class UsersService {
       : (this._users[listId] = []);
   }
 
-  private setUsersOfList(listId: string, users: UserModel[]): UserModel[] {
+  public setUsersOfList(listId: string, users: UserModel[]): UserModel[] {
     this._users[listId] = users;
 
     return users;
   }
 
-  public getUserByUsername(
-    listId: string,
-    username: string
-  ): ResponseModel<UserModel> {
-    let usersOfList = this.getUsersOfList(listId);
-
-    const user = usersOfList.find((user) => user?.username === username);
-
-    if (!user) {
-      return { error: `username ${username} don't exists in list ${listId}` };
-    }
-
-    return { result: user };
-  }
-
   public removeUsersList(listId: string) {
-    console.log(`Removing users of list ${listId}`);
     try {
       delete this._users[listId];
 
@@ -54,100 +36,65 @@ export class UsersService {
     }
   }
 
-  public addUserInList(
-    listId: string,
-    body: UserCreateModel
-  ): ResponseModel<UserModel[]> {
+  public addUserInList(listId: string, body: UserCreateModel) {
     const usersOfList = this.getUsersOfList(listId);
 
     const newUser = {
       id: UuidAdapter.v4(),
-      ...(usersOfList?.length === 0 && {
-        status: STATUS_LIST.NOT_STARTED,
-      }), // only set STATUS for HOST user
+      status: body?.status ? body?.status : STATUS_LIST.NOT_STARTED,
       host: usersOfList?.length === 0 ? true : false,
       ...body,
     };
 
-    const usernameExists =
-      usersOfList.findIndex((user) => user.username === body.username) !== -1;
-
-    console.log('Checking if username already exists: ', usernameExists);
-
-    if (usersOfList?.length === 0 || !usernameExists) {
-      usersOfList.push(newUser);
-
-      const newList = this.getUsersOfList(listId);
+    if (
+      usersOfList?.length === 0 ||
+      !usersOfList.find((user) => user.username === body.username)
+    ) {
+      const newList = usersOfList.push(newUser);
 
       console.log(`User ${body.username} added `);
 
-      return { result: newList };
+      WssService.instance.sendMessage('userAdded', {
+        users: usersOfList,
+      });
+
+      return newList;
     } else {
-      return { error: 'username already exists' };
+      WssService.instance.sendMessage('error', {
+        message: 'username already exists',
+      });
     }
   }
 
-  public removeUser(
-    listId: string,
-    body: UserRemoveModel
-  ): ResponseModel<UserModel[]> {
+  public removeUser(listId: string, body: UserRemoveModel) {
     let usersOfList = this.getUsersOfList(listId);
 
     if (!body?.username) {
-      return { error: 'invalid id' };
+      WssService.instance.sendMessage('error', {
+        message: 'invalid id',
+      });
+
+      return;
     }
 
     const newList = usersOfList.filter(
       (user) => user?.username != body?.username
     );
 
+    // if last user leaves;
+    if (!newList?.length) {
+      this.removeUsersList(listId);
+      return;
+    }
+
     console.log(`User ${body.username} removed `);
 
-    return { result: this.setUsersOfList(listId, newList) };
-  }
+    this.setUsersOfList(listId, newList);
 
-  public updateUser(
-    listId: string,
-    body: UserUpdateModel
-  ): ResponseModel<UserModel[]> {
-    let usersOfList = this.getUsersOfList(listId);
-
-    if (!body?.username) {
-      return { error: 'username is necesary' };
-    }
-
-    const indexToUpdate = usersOfList.findIndex(
-      (user) => user?.username === body?.username
-    );
-
-    if (indexToUpdate === -1) {
-      return { error: 'username not found' };
-    }
-
-    usersOfList[indexToUpdate] = {
-      ...usersOfList[indexToUpdate],
-      ...body,
-    };
-
-    console.log(`User ${body.username} updated `);
-
-    return { result: this.setUsersOfList(listId, usersOfList) };
-  }
-
-  public startPlaylist(listId: string): ResponseModel<UserModel[]> {
-    let usersOfList = this.getUsersOfList(listId);
-
-    const updateUsers = usersOfList.map((user) => {
-      if (user?.status && user.host) {
-        user.status = STATUS_LIST.PLAYING;
-      }
-
-      return user;
+    WssService.instance.sendMessage('userRemoved', {
+      listId,
+      users: newList,
     });
-
-    this.setUsersOfList(listId, updateUsers);
-
-    return { result: updateUsers };
   }
 
   public onMessage(listId: string, msg: Record<string, unknown>) {
@@ -157,14 +104,6 @@ export class UsersService {
 
     if (msg.event === EVENTS.REMOVE_USER) {
       this.removeUser(listId, msg.data as UserRemoveModel);
-    }
-
-    if (msg.event === EVENTS.START_PLAYLIST) {
-      this.startPlaylist(listId);
-    }
-
-    if (msg.event === EVENTS.UPDATE_USER) {
-      this.updateUser(listId, msg.data as UserUpdateModel);
     }
   }
 }
