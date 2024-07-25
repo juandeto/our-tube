@@ -58,9 +58,7 @@ export class VideoListService {
         },
       });
 
-      // add users to the response
-
-      if (!videoList) {
+      if (!videoList?.id) {
         return { error: `Video list with id ${id} not found` };
       }
 
@@ -132,9 +130,5 @@ export class VideoListService {
       console.log(`Error deleting video list with id ${id}`);
       return { error: `Error deleting video list with id ${id}` };
     }
-  }
-
-  public onVideoListChange(payload: Object) {
-    this.wssService.sendMessage('on-video-list-change', payload);
   }
 }

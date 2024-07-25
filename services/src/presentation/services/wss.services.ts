@@ -2,6 +2,9 @@ import { IncomingMessage, Server } from 'http';
 import { WebSocket, WebSocketServer } from 'ws';
 import { UsersService } from './users.service';
 import url from 'url';
+import { EVENTS } from '../../utils/events.utils';
+import { PlaybackService } from './playback.service';
+import { Playlist } from './playlist.service';
 
 interface Options {
   server: Server;
@@ -11,14 +14,14 @@ interface Options {
 export class WssService {
   private static _instance: WssService;
   private wss: WebSocketServer;
+  private playlistService: Playlist;
+  private clients: Record<string, WebSocket[]> = {};
 
-  private constructor(
-    options: Options,
-    private readonly userService = new UsersService()
-  ) {
+  private constructor(options: Options) {
     const { server, path = '/ws' } = options; /// ws://localhost:3000/ws
 
     this.wss = new WebSocketServer({ server, path });
+    this.playlistService = new Playlist(); // Initialize Playlist service
     this.start();
   }
 
@@ -34,8 +37,12 @@ export class WssService {
     WssService._instance = new WssService(options);
   }
 
-  public sendMessage(type: string, payload: Object) {
-    this.wss.clients.forEach((client) => {
+  public sendMessage(type: string, payload: Object, listdId: string) {
+    console.log(`Event ${type} sended`);
+    console.log('');
+    console.log('');
+    console.log('');
+    this.clients[listdId].forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({ type, payload }));
       }
@@ -43,9 +50,11 @@ export class WssService {
   }
 
   public onMessageReceived(listId: string, message: Record<string, unknown>) {
-    console.log('message received: ', message);
+    this.playlistService.onMessage(listId, message);
+  }
 
-    this.userService.onMessage(listId, message);
+  public onConnection(listId: string) {
+    this.playlistService.onConnection(listId);
   }
 
   public start() {
@@ -55,24 +64,31 @@ export class WssService {
 
       if (!listId || typeof listId !== 'string') return;
 
-      ws.on('message', (bytes) => {
-        console.log('request: ', request.url);
+      if (!this.clients[listId]) {
+        this.clients[listId] = [ws];
+      } else {
+        this.clients[listId].push(ws);
+      }
 
+      this.onConnection(listId);
+
+      ws.on('message', (bytes) => {
         const message = JSON.parse(bytes.toString());
 
         this.onMessageReceived(listId, message);
       });
 
-      ws.on('close', (bytes, reason) => {
-        const message = Buffer.from(reason);
-        try {
-          const parsedMessage = JSON.parse(message.toString());
-          console.log('Client disconnected: ', parsedMessage?.username);
+      ws.on('close', () => {
+        const index = this.clients[listId].indexOf(ws);
 
-          this.onMessageReceived(listId, parsedMessage);
-        } catch (error) {
-          console.log('Client disconnected with non-JSON message: ', message);
+        this.clients[listId].splice(index, 1);
+
+        if (this.clients[listId].length === 0) {
+          console.log(`Clients of list ${listId} deleted`);
+          delete this.clients[listId];
         }
+
+        console.log('Client disconnected');
       });
     });
   }
