@@ -131,8 +131,4 @@ export class VideoListService {
       return { error: `Error deleting video list with id ${id}` };
     }
   }
-
-  public onVideoListChange(payload: Object) {
-    this.wssService.sendMessage('on-video-list-change', payload);
-  }
 }

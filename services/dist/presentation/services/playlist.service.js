@@ -4,73 +4,59 @@ exports.Playlist = void 0;
 const events_utils_1 = require("../../utils/events.utils");
 const playback_service_1 = require("./playback.service");
 const users_service_1 = require("./users.service");
+const votes_service_1 = require("./votes.service");
 const wss_services_1 = require("./wss.services");
 class Playlist {
-    constructor(userService = new users_service_1.UsersService(), playbackService = new playback_service_1.PlaybackService()) {
+    constructor(userService = new users_service_1.UsersService(), playbackService = new playback_service_1.PlaybackService(), votesService = new votes_service_1.VotesService()) {
         this.userService = userService;
         this.playbackService = playbackService;
+        this.votesService = votesService;
     }
     getPlaylist(listId) {
         const availableUsers = this.userService.getUsersOfList(listId);
         const currentPlayback = this.playbackService.getPlaybackById(listId);
+        const currentVotes = this.votesService.getListVotes(listId);
         return {
             users: availableUsers,
             playback: currentPlayback,
+            votes: currentVotes,
         };
     }
     onConnection(listId) {
         const playlist = this.getPlaylist(listId);
-        wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.INIT_PLAYLIST, playlist);
+        wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.INIT_PLAYLIST, playlist, listId);
     }
     startPlaylist(listId, payload) {
+        var _a, _b;
+        if (!((_a = payload === null || payload === void 0 ? void 0 : payload.user) === null || _a === void 0 ? void 0 : _a.host)) {
+            wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.ERROR, {
+                message: 'Playlist only can be started by host',
+                username: (_b = payload === null || payload === void 0 ? void 0 : payload.user) === null || _b === void 0 ? void 0 : _b.username,
+            }, listId);
+            return;
+        }
         const { result: users } = this.userService.startPlaylist(listId);
-        const { result: playback, error } = this.playbackService.initPlayback(listId, payload);
+        if (!users)
+            return;
+        const { result: playback, error } = this.playbackService.initPlayback(listId, { url: users[0].url });
         if (error || !(playback === null || playback === void 0 ? void 0 : playback.url)) {
             wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.ERROR, {
                 message: !(playback === null || playback === void 0 ? void 0 : playback.url) ? 'playback do not exists' : error,
-            });
+            }, listId);
             return;
         }
         console.log(`Starting playlist...`);
         wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.PLAYLIST_STARTED, {
             users,
             playback,
-        });
+        }, listId);
     }
-    updatePlaylist(listId, msg) {
-        let users = null;
-        let playback = null;
-        console.log(`Playlist updating for event ${msg.event}`);
-        if (msg.event === events_utils_1.EVENTS.UPDATE_USER) {
-            const { result, error } = this.userService.updateUser(listId, msg.data);
-            if (error || !result) {
-                wss_services_1.WssService.instance.sendMessage('error', {
-                    message: error,
-                });
-                return;
-            }
-            users = result;
-        }
-        else {
-            users = this.userService.getUsersOfList(listId);
-        }
-        if (msg.event === events_utils_1.EVENTS.UPDATE_PLAYBACK) {
-            const { result, error } = this.playbackService.updatePlayback(listId, msg.data);
-            if (error || !result) {
-                wss_services_1.WssService.instance.sendMessage('error', {
-                    message: error,
-                });
-                return;
-            }
-            playback = result;
-        }
-        else {
-            playback = this.playbackService.getPlaybackById(listId);
-        }
-        wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.UPDATE_PLAYLIST, {
-            users,
-            playback,
-        });
+    endPlaylist(listId, reason) {
+        console.log('Reason of ending: ', reason);
+        this.userService.removeUsersList(listId);
+        this.playbackService.removePlayback(listId);
+        this.votesService.removeVotesList(listId);
+        wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.PLAYLIST_ENDED, { reason }, listId);
     }
     addUserToPlaylist(listId, payload) {
         const { result: newUserList, error } = this.userService.addUserInList(listId, payload);
@@ -78,12 +64,26 @@ class Playlist {
             console.error(error);
             wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.ERROR, {
                 message: error,
-            });
+                username: payload === null || payload === void 0 ? void 0 : payload.username,
+            }, listId);
             return;
         }
         wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.USER_ADDED, {
             users: newUserList,
-        });
+        }, listId);
+    }
+    updateUser(listId, payload) {
+        let users = null;
+        const { result, error } = this.userService.updateUser(listId, payload);
+        if (error || !result) {
+            wss_services_1.WssService.instance.sendMessage('error', {
+                username: payload === null || payload === void 0 ? void 0 : payload.username,
+                message: error,
+            }, listId);
+            return;
+        }
+        users = result;
+        return users;
     }
     userUrlIsInPlayback(listId, user) {
         const playback = this.playbackService.getPlaybackById(listId);
@@ -96,13 +96,12 @@ class Playlist {
         // check if user to be removed is the last
         const indexToRemove = userList.indexOf(user);
         const isLastIndex = indexToRemove === userList.length - 1;
+        console.log('indexToRemove: ', indexToRemove);
+        console.log('last index: ', userList.length - 1);
         // if true => end list event
         if (isLastIndex) {
             console.log(`User ${user.username} is last user: ENDING the playlist...`);
-            this.endPlaylist(listId);
-            wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.PLAYLIST_ENDED, {
-                listId,
-            });
+            this.endPlaylist(listId, 'Last user video was playing, but he logged out.');
             return;
         }
         // if false => update playback with next user
@@ -111,26 +110,27 @@ class Playlist {
             console.error(removedError);
             wss_services_1.WssService.instance.sendMessage('error', {
                 message: removedError,
-            });
+            }, listId);
             return;
         }
+        const newVotes = this.votesService.removeUserVote(listId, user.username);
         const newUrl = newUsers[indexToRemove].url;
-        const { error, result: playback } = this.playbackService.updatePlayback(listId, {
+        const { error, result: playback } = this.playbackService.nextVideo(listId, {
             url: newUrl,
         });
         if (error) {
             console.error(error);
             wss_services_1.WssService.instance.sendMessage('error', {
                 message: removedError,
-            });
+            }, listId);
             return;
         }
         console.log(`Updating playlist with url ${newUrl} of user ${newUsers[indexToRemove].username}`);
         wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.USER_OF_PLAYBACK_LOGOUT, {
-            listId,
             users: newUsers,
             playback,
-        });
+            votes: newVotes,
+        }, listId);
         return;
     }
     removeUser(listId, payload) {
@@ -141,16 +141,13 @@ class Playlist {
             console.error(getError);
             wss_services_1.WssService.instance.sendMessage('error', {
                 message: getError,
-            });
+            }, listId);
             return;
         }
         // check if user is host
         if (user.host) {
             console.log(`HOST user ${user.username} logging out...`);
-            this.endPlaylist(listId);
-            return wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.PLAYLIST_ENDED, {
-                listId,
-            });
+            return this.endPlaylist(listId, 'Host user logged out');
         }
         // check if user url is in the playback
         const userUrlIsInPlayback = this.userUrlIsInPlayback(listId, user);
@@ -164,22 +161,94 @@ class Playlist {
             console.error(error);
             wss_services_1.WssService.instance.sendMessage('error', {
                 message: error,
-            });
+            }, listId);
             return;
         }
+        const newVotes = this.votesService.removeUserVote(listId, payload.username);
         // if no users are left, end playlist
         if (!(result === null || result === void 0 ? void 0 : result.length)) {
-            return this.endPlaylist(listId);
+            return this.endPlaylist(listId, 'All users looged out');
         }
         console.log(`Removing user ${user.username}...`);
         wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.USER_REMOVED, {
             listId,
             users: result,
-        });
+            votes: newVotes,
+        }, listId);
     }
-    endPlaylist(listId) {
-        this.userService.removeUsersList(listId);
-        this.playbackService.removePlayback(listId);
+    updatePlayback(listId, payload) {
+        var _a, _b;
+        if (!((_a = payload === null || payload === void 0 ? void 0 : payload.user) === null || _a === void 0 ? void 0 : _a.host)) {
+            wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.ERROR, {
+                message: 'Playlist only can be updated by host',
+                username: (_b = payload === null || payload === void 0 ? void 0 : payload.user) === null || _b === void 0 ? void 0 : _b.username,
+            }, listId);
+            return;
+        }
+        let playback = null;
+        console.log(`Playlist getting next video...`);
+        // get user index of current playback
+        const nextVideoUrl = this.getNextVideoUrl(listId);
+        console.log('nextVideoUrl: ', nextVideoUrl);
+        if (!nextVideoUrl) {
+            return this.endPlaylist(listId, 'There are no more videos. Playlist has ended');
+        }
+        const { result, error } = this.playbackService.nextVideo(listId, {
+            url: nextVideoUrl,
+        });
+        if (error || !result) {
+            wss_services_1.WssService.instance.sendMessage('error', {
+                message: error,
+            }, listId);
+            return;
+        }
+        playback = result;
+        const resetedVotes = this.votesService.cleanVotesOfList(listId);
+        wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.UPDATE_PLAYLIST, {
+            playback,
+            votes: resetedVotes,
+        }, listId);
+    }
+    getNextVideoUrl(listId) {
+        const userList = this.userService.getUsersOfList(listId);
+        const currentPlayback = this.playbackService.getPlaybackById(listId);
+        const currIndex = userList.findIndex((user) => user.url === (currentPlayback === null || currentPlayback === void 0 ? void 0 : currentPlayback.url));
+        console.log('currIndex: ', currIndex, 'userList: ', userList);
+        if (currIndex === -1) {
+            return null;
+        }
+        if (currIndex + 1 > userList.length - 1) {
+            return null;
+        }
+        return userList[currIndex + 1].url;
+    }
+    onUserChatMessage(listId, payload) {
+        wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.RESEND_CHAT_MSG, {
+            listId,
+            chatMsg: payload,
+        }, listId);
+    }
+    onAddVote(listId, payload) {
+        const { result, error } = this.userService.getUserByUsername(listId, payload.username);
+        const list = this.playbackService.getPlaybackById(listId);
+        if (!list) {
+            wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.ERROR, {
+                message: 'Playlist must start if you want to vote',
+                username: payload === null || payload === void 0 ? void 0 : payload.username,
+            }, listId);
+            return;
+        }
+        if (error || !result) {
+            wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.ERROR, {
+                message: 'You must be logged in to vote',
+                username: payload === null || payload === void 0 ? void 0 : payload.username,
+            }, listId);
+            return;
+        }
+        const votes = this.votesService.voteInList(listId, payload);
+        return wss_services_1.WssService.instance.sendMessage(events_utils_1.EVENTS.UPDATED_VOTING_RESULTS, {
+            votes,
+        }, listId);
     }
     onMessage(listId, msg) {
         console.log('');
@@ -197,9 +266,17 @@ class Playlist {
         if (msg.event === events_utils_1.EVENTS.REMOVE_USER) {
             this.removeUser(listId, msg.data);
         }
-        if (msg.event === events_utils_1.EVENTS.UPDATE_PLAYBACK ||
-            msg.event === events_utils_1.EVENTS.UPDATE_USER) {
-            this.updatePlaylist(listId, msg);
+        if (msg.event === events_utils_1.EVENTS.NEXT_VIDEO) {
+            this.updatePlayback(listId, msg.data);
+        }
+        if (msg.event === events_utils_1.EVENTS.UPDATE_USER) {
+            this.updateUser(listId, msg.data);
+        }
+        if (msg.event === events_utils_1.EVENTS.SEND_CHAT_MSG) {
+            this.onUserChatMessage(listId, msg.data);
+        }
+        if (msg.event === events_utils_1.EVENTS.ADD_VOTE) {
+            this.onAddVote(listId, msg.data);
         }
     }
 }

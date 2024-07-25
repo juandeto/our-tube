@@ -15,6 +15,7 @@ export class WssService {
   private static _instance: WssService;
   private wss: WebSocketServer;
   private playlistService: Playlist;
+  private clients: Record<string, WebSocket[]> = {};
 
   private constructor(options: Options) {
     const { server, path = '/ws' } = options; /// ws://localhost:3000/ws
@@ -36,12 +37,12 @@ export class WssService {
     WssService._instance = new WssService(options);
   }
 
-  public sendMessage(type: string, payload: Object) {
+  public sendMessage(type: string, payload: Object, listdId: string) {
     console.log(`Event ${type} sended`);
     console.log('');
     console.log('');
     console.log('');
-    this.wss.clients.forEach((client) => {
+    this.clients[listdId].forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({ type, payload }));
       }
@@ -63,6 +64,12 @@ export class WssService {
 
       if (!listId || typeof listId !== 'string') return;
 
+      if (!this.clients[listId]) {
+        this.clients[listId] = [ws];
+      } else {
+        this.clients[listId].push(ws);
+      }
+
       this.onConnection(listId);
 
       ws.on('message', (bytes) => {
@@ -71,16 +78,17 @@ export class WssService {
         this.onMessageReceived(listId, message);
       });
 
-      ws.on('close', (bytes, reason) => {
-        const message = Buffer.from(reason);
-        try {
-          const parsedMessage = JSON.parse(message.toString());
-          console.log('Client disconnected: ', parsedMessage?.username);
+      ws.on('close', () => {
+        const index = this.clients[listId].indexOf(ws);
 
-          this.onMessageReceived(listId, parsedMessage);
-        } catch (error) {
-          console.log('Client disconnected with non-JSON message: ', message);
+        this.clients[listId].splice(index, 1);
+
+        if (this.clients[listId].length === 0) {
+          console.log(`Clients of list ${listId} deleted`);
+          delete this.clients[listId];
         }
+
+        console.log('Client disconnected');
       });
     });
   }

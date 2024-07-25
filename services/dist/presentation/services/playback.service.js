@@ -24,6 +24,7 @@ class PlaybackService {
         return { result: playback };
     }
     removePlayback(listId) {
+        console.log(`Removing playback of list ${listId}`);
         try {
             delete this._playbacks[listId];
             return true;
@@ -32,7 +33,7 @@ class PlaybackService {
             return false;
         }
     }
-    updatePlayback(listId, body) {
+    nextVideo(listId, body) {
         console.log('Updating playback with url: ', body === null || body === void 0 ? void 0 : body.url);
         let playback = this.getPlaybackById(listId);
         if (!playback) {
@@ -55,8 +56,8 @@ class PlaybackService {
             this.initPlayback(listId, msg.data);
             return;
         }
-        if (msg.event === events_utils_1.EVENTS.UPDATE_PLAYBACK) {
-            this.updatePlayback(listId, msg.data);
+        if (msg.event === events_utils_1.EVENTS.NEXT_VIDEO) {
+            this.nextVideo(listId, msg.data);
         }
     }
 }

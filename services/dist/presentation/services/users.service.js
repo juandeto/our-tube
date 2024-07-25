@@ -26,6 +26,7 @@ class UsersService {
         return { result: user };
     }
     removeUsersList(listId) {
+        console.log(`Removing users of list ${listId}`);
         try {
             delete this._users[listId];
             return true;
@@ -37,10 +38,11 @@ class UsersService {
     addUserInList(listId, body) {
         const usersOfList = this.getUsersOfList(listId);
         const newUser = Object.assign(Object.assign(Object.assign({ id: uuid_adapter_1.UuidAdapter.v4() }, ((usersOfList === null || usersOfList === void 0 ? void 0 : usersOfList.length) === 0 && {
-            status: (body === null || body === void 0 ? void 0 : body.status) ? body === null || body === void 0 ? void 0 : body.status : video_list_models_1.STATUS_LIST.NOT_STARTED,
+            status: video_list_models_1.STATUS_LIST.NOT_STARTED,
         })), { host: (usersOfList === null || usersOfList === void 0 ? void 0 : usersOfList.length) === 0 ? true : false }), body);
-        if ((usersOfList === null || usersOfList === void 0 ? void 0 : usersOfList.length) === 0 ||
-            !usersOfList.find((user) => user.username === body.username)) {
+        const usernameExists = usersOfList.findIndex((user) => user.username === body.username) !== -1;
+        console.log('Checking if username already exists: ', usernameExists);
+        if ((usersOfList === null || usersOfList === void 0 ? void 0 : usersOfList.length) === 0 || !usernameExists) {
             usersOfList.push(newUser);
             const newList = this.getUsersOfList(listId);
             console.log(`User ${body.username} added `);

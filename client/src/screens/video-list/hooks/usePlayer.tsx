@@ -1,22 +1,21 @@
 import { YouTubePlayer, YouTubeEvent } from 'react-youtube';
 import { useState, useRef } from 'react';
 import { User } from 'typing/shared';
-import { VIDEO_STATUS, VIDEO_STATUS_TO_STATUS_LIST } from 'utils/constants';
-import { UpdateVideoListBody } from 'typing/services';
-
+import { VIDEO_STATUS } from 'utils/constants';
 export default function usePlayer({
   usersData,
-  onListEnd,
   onStartPlaying,
   onVideoEnd,
 }: {
   usersData: User[] | null;
-  onListEnd: (data: UpdateVideoListBody) => void;
   onStartPlaying: () => void;
-  onVideoEnd: (newUrl: string) => void;
+  onVideoEnd: () => void;
 }) {
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const [videoData, setVideoData] = useState<Record<string, string>>({});
+  const [volume, setVolume] = useState<number>(50);
+
+  const [videoData, setVideoData] = useState<Record<string, string | number>>(
+    {}
+  );
 
   const player = useRef<YouTubePlayer | null>(null);
 
@@ -26,30 +25,25 @@ export default function usePlayer({
 
     const videoData = player.current.getVideoData();
 
-    setVideoData(videoData);
+    const duration = Number(player?.current?.getDuration());
+
+    setVideoData({ ...videoData, duration });
+    player.current.setVolume(volume);
   }
 
   function onPlayerStateChange(event: YouTubeEvent) {
-    console.log(
-      'currentVideoIndex: ',
-      currentVideoIndex,
-      'usersData: ',
-      usersData
-    );
     if (VIDEO_STATUS.ENDED === event.data) {
-      if (usersData?.length && currentVideoIndex === usersData?.length - 1) {
+      if (
+        usersData?.length &&
+        usersData[usersData.length - 1].url.includes(
+          videoData?.video_id as string
+        )
+      ) {
         // playlist ended
         console.log('video ended');
-        onListEnd({
-          status: VIDEO_STATUS_TO_STATUS_LIST[VIDEO_STATUS.ENDED],
-        });
-        return;
       }
 
-      setCurrentVideoIndex((curr) => curr + 1);
-      const newUrl = usersData?.[currentVideoIndex + 1]?.url || '';
-
-      onVideoEnd(newUrl);
+      onVideoEnd();
     }
   }
 
@@ -59,14 +53,28 @@ export default function usePlayer({
 
   function onPlayerError(_event: YouTubeEvent) {}
 
-  function handleVolumePlayer(e: string) {
+  function handleVolumePlayer(e: string | number) {
+    setVolume(Number(e));
     player.current.setVolume(Number(e));
   }
 
-  function updatePlayerTime(currentTime: number, url: string) {
-    console.log('player.current: ', player.current);
-
+  function updatePlayerTime(currentTime: number) {
     player.current.seekTo(currentTime);
+
+    const duration = Number(player?.current?.getDuration()) - currentTime;
+
+    setVideoData({ ...videoData, duration });
+  }
+
+  function handleRepeatVideo() {
+    const duration = Number(player?.current?.getDuration());
+
+    setVideoData(() => ({ ...videoData, duration }));
+
+    console.log('videoData: ', videoData);
+
+    player.current.seekTo(0);
+    player.current.playVideo();
   }
 
   return {
@@ -80,5 +88,7 @@ export default function usePlayer({
     onPlayerError,
     handleVolumePlayer,
     updatePlayerTime,
+    volume,
+    handleRepeatVideo,
   };
 }

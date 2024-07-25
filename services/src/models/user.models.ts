@@ -36,3 +36,8 @@ export interface UserUpdateModel {
   status?: STATUS_TYPE;
   host?: boolean;
 }
+
+export interface UserChatMsg {
+  message: string;
+  username: string;
+}

@@ -118,8 +118,5 @@ class VideoListService {
             }
         });
     }
-    onVideoListChange(payload) {
-        this.wssService.sendMessage('on-video-list-change', payload);
-    }
 }
 exports.VideoListService = VideoListService;

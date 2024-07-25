@@ -42,6 +42,7 @@ export class PlaybackService {
   }
 
   public removePlayback(listId: string): boolean {
+    console.log(`Removing playback of list ${listId}`);
     try {
       delete this._playbacks[listId];
 
@@ -51,7 +52,7 @@ export class PlaybackService {
     }
   }
 
-  public updatePlayback(
+  public nextVideo(
     listId: string,
     body: UpdatePlaybackModel
   ): ResponseModel<PlaybackModel> {
@@ -86,8 +87,8 @@ export class PlaybackService {
       return;
     }
 
-    if (msg.event === EVENTS.UPDATE_PLAYBACK) {
-      this.updatePlayback(listId, msg.data as UpdatePlaybackModel);
+    if (msg.event === EVENTS.NEXT_VIDEO) {
+      this.nextVideo(listId, msg.data as UpdatePlaybackModel);
     }
   }
 }

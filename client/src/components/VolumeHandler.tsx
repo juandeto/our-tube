@@ -2,30 +2,38 @@ import { useRef, useState } from 'react';
 import { Input } from './Ui/Input';
 import { Label } from './Ui/Label';
 import { Volume1, Volume, Volume2, VolumeX } from 'lucide-react';
+import { Button } from './Ui/Button';
 
 export default function VolumeHandler({
   handleVolumePlayer,
+  volume,
 }: {
   handleVolumePlayer: (v: string) => void;
+  volume: number;
 }) {
-  const [volume, setVolume] = useState<number>(50);
-
-  function getVolumeIcon() {
-    switch (true) {
-      case volume === 0:
-        return <VolumeX />;
-      case volume < 25:
-        return <Volume />;
-      case volume > 75:
-        return <Volume2 />;
-      default:
-        return <Volume1 />;
-    }
-  }
-
   return (
     <div className="p-4 inline">
-      <Label htmlFor="volume">{getVolumeIcon()}</Label>
+      <div className="flex justify-between gap-4">
+        <Button
+          className="align-center rounded-full px-2 hover:scale-110 transition-transform"
+          onClick={() => handleVolumePlayer('0')}
+          variant="ghost"
+        >
+          <VolumeX />
+        </Button>
+        <Button
+          className="align-center rounded-full px-2 hover:scale-110 transition-transform"
+          variant="ghost"
+        >
+          <Volume1 onClick={() => handleVolumePlayer('50')} />
+        </Button>
+        <Button
+          className="align-center rounded-full px-2 hover:scale-110 transition-transform"
+          variant="ghost"
+        >
+          <Volume2 onClick={() => handleVolumePlayer('100')} />
+        </Button>
+      </div>
       <div className="w-36">
         <Input
           className="px-0"
@@ -34,8 +42,8 @@ export default function VolumeHandler({
           name="volume"
           min={0}
           max={100}
+          value={volume}
           onChange={(e) => {
-            setVolume(Number(e.target.value));
             handleVolumePlayer(e.target.value);
           }}
         />

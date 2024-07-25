@@ -44,6 +44,7 @@ export class UsersService {
   }
 
   public removeUsersList(listId: string) {
+    console.log(`Removing users of list ${listId}`);
     try {
       delete this._users[listId];
 
@@ -62,16 +63,18 @@ export class UsersService {
     const newUser = {
       id: UuidAdapter.v4(),
       ...(usersOfList?.length === 0 && {
-        status: body?.status ? body?.status : STATUS_LIST.NOT_STARTED,
+        status: STATUS_LIST.NOT_STARTED,
       }), // only set STATUS for HOST user
       host: usersOfList?.length === 0 ? true : false,
       ...body,
     };
 
-    if (
-      usersOfList?.length === 0 ||
-      !usersOfList.find((user) => user.username === body.username)
-    ) {
+    const usernameExists =
+      usersOfList.findIndex((user) => user.username === body.username) !== -1;
+
+    console.log('Checking if username already exists: ', usernameExists);
+
+    if (usersOfList?.length === 0 || !usernameExists) {
       usersOfList.push(newUser);
 
       const newList = this.getUsersOfList(listId);

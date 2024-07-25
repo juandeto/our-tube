@@ -23,5 +23,5 @@ export const NOTIFICATIONS_MSG = {
   USER_ADDED: 'User joined.',
   USER_REMOVED: 'A user logged out.',
   PLAYLIST_ENDED: 'Playlist ended.',
-  USER_OF_PLAYBACK_LOGOUT: 'Playlist has ended: HOST user logged out.',
+  USER_OF_PLAYBACK_LOGOUT: 'User that added that video logged out.',
 };

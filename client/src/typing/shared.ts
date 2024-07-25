@@ -24,6 +24,11 @@ export const EVENTS = {
   GET_PLAYBACK: 'getPlayback',
   UPDATE_PLAYBACK: 'updatePlayback',
   PLAYBACK_UPDATED: 'playbackUpdated',
+  SEND_CHAT_MSG: 'sendChatMsg',
+  RESEND_CHAT_MSG: 'resendChatMsg',
+  NEXT_VIDEO: 'nextVideo',
+  ADD_VOTE: 'addVote',
+  UPDATED_VOTING_RESULTS: 'updateVotingResults',
 } as const;
 
 export type EVENTS_TYPE = (typeof EVENTS)[keyof typeof EVENTS];
@@ -70,6 +75,10 @@ export interface MessageResponse {
   users?: User[];
   playback?: Playback;
   user?: User;
+  chatMsg?: UserChatResponse;
+  listId?: string;
+  reason?: string;
+  votes?: VoteUser[];
 }
 
 export interface YoutubePlayerProps {
@@ -86,4 +95,24 @@ export enum ReadyState {
   CLOSING,
   CLOSED,
   UNINSTANTIATED,
+}
+
+export interface UserChatMsg {
+  message: string;
+  username: string;
+}
+
+export interface UserChatResponse {
+  listId: string;
+  message: UserChatMsg;
+}
+
+export enum VOTES_TYPES {
+  REPEAT,
+  NEXT,
+}
+
+export interface VoteUser {
+  vote: VOTES_TYPES;
+  username: string;
 }

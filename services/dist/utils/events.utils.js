@@ -18,6 +18,10 @@ exports.EVENTS = {
     INIT_USERS: 'initUsers',
     PLAYBACK_INIT: 'initPlayback',
     GET_PLAYBACK: 'getPlayback',
-    UPDATE_PLAYBACK: 'updatePlayback',
+    NEXT_VIDEO: 'nextVideo',
     PLAYBACK_UPDATED: 'playbackUpdated',
+    SEND_CHAT_MSG: 'sendChatMsg',
+    RESEND_CHAT_MSG: 'resendChatMsg',
+    ADD_VOTE: 'addVote',
+    UPDATED_VOTING_RESULTS: 'updateVotingResults',
 };

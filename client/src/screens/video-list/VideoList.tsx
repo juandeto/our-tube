@@ -7,6 +7,9 @@ import {
   UserCreateModel,
   MessageResponse,
   WssEvent,
+  UserChatMsg,
+  VoteUser,
+  VOTES_TYPES,
 } from '../../typing/shared';
 import { generatePath, useNavigate, useParams } from 'react-router-dom';
 import UserForm from 'components/UserForm';
@@ -25,6 +28,8 @@ import {
   VIDEO_STATUS_TO_STATUS_LIST,
 } from 'utils/constants';
 import { useSnackbar } from 'notistack';
+import ChannelChat from 'components/ChannelChat';
+import { calculateVotePercentages } from 'utils/utils';
 
 const WS_URL = (listId: string) => `ws://localhost:8080/ws?listId=${listId}`;
 
@@ -35,7 +40,11 @@ export default function VideoList() {
   const [playbackData, setPlaybackData] = useState<Playback | null>(null);
   const [videoStarted, setVideoStarted] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
-  const [showDialog, setShowDialog] = useState(false);
+  const [chatMessages, setChatMessages] = useState<UserChatMsg[]>([]);
+  const [userVotes, setUserVotes] = useState<VoteUser[]>([]);
+  const [sendingVote, setSendingVote] = useState(false);
+  const [repeatVideo, setRepeatVideo] = useState(false);
+
   const { id } = useParams();
 
   const listId = id;
@@ -46,19 +55,6 @@ export default function VideoList() {
 
   const { list, isPending, handleUpdateList } = useListHandlers({ listId });
 
-  function onListEnd() {
-    if (isHost) {
-      handleUpdateList({
-        status: VIDEO_STATUS_TO_STATUS_LIST[VIDEO_STATUS.ENDED],
-      });
-
-      sendMessage(EVENTS.PLAYLIST_ENDED, {});
-    }
-
-    const listEndedPath = generatePath(ROUTES.LIST_ENDED, { id: listId });
-    navigate(listEndedPath);
-  }
-
   function onStartPlaying() {
     if (isHost) {
       handleUpdateList({
@@ -68,12 +64,18 @@ export default function VideoList() {
     setVideoStarted(true);
   }
 
-  function onVideoEnd(newUrl: string) {
+  function onVideoEnd() {
+    if (repeatVideo) {
+      handleRepeatVideo();
+      return;
+    }
+
     if (isHost) {
-      console.log('update playback ');
-      sendMessage(EVENTS.UPDATE_PLAYBACK, {
-        url: newUrl,
-      });
+      const user = usersData?.find((u) => u.username === username);
+
+      if (!user) return;
+
+      sendMessage(EVENTS.NEXT_VIDEO, { user });
     }
   }
 
@@ -85,7 +87,9 @@ export default function VideoList() {
     onPlayerError,
     handleVolumePlayer,
     updatePlayerTime,
-  } = usePlayer({ usersData, onStartPlaying, onListEnd, onVideoEnd });
+    volume,
+    handleRepeatVideo,
+  } = usePlayer({ usersData, onStartPlaying, onVideoEnd });
 
   const { title, subject } = list || {};
 
@@ -116,7 +120,6 @@ export default function VideoList() {
         (new Date().getTime() - new Date(playbackData.started_time).getTime()) /
         1000;
 
-      console.log('diff in seconds: ', seconds);
       if (seconds > 10) {
         updatePlayerTime(Math.round(seconds), playbackData.url);
       }
@@ -129,16 +132,58 @@ export default function VideoList() {
     }
     return () => {
       window.removeEventListener('unload', handleUnload);
+      if (username) {
+        handleUnload();
+      }
     };
   }, [username]);
+
+  useEffect(() => {
+    function handleVotingActions() {
+      const { nextPercentage, repeatPercentage } = calculateVotePercentages(
+        userVotes,
+        usersData?.length || 0
+      );
+
+      const repeatPercentageNumber = parseInt(repeatPercentage);
+      const nextPercentageNumber = parseInt(nextPercentage);
+
+      console.log({ repeatPercentageNumber, nextPercentageNumber });
+
+      if (nextPercentageNumber > 50 && isHost) {
+        const user = usersData?.find((u) => u.username === username);
+
+        if (!user) return;
+
+        sendMessage(EVENTS.NEXT_VIDEO, { user });
+      }
+
+      if (repeatPercentageNumber > 50) {
+        setRepeatVideo(true);
+        return;
+      }
+      setRepeatVideo(false);
+    }
+
+    if (userVotes?.length && usersData?.length) {
+      handleVotingActions();
+    }
+  }, [userVotes, usersData]);
 
   function handleMessageReceived(msg: WssEvent<MessageResponse>) {
     const { payload, type: event } = msg;
 
-    handleNotifications(event);
+    handleNotifications(event, payload);
 
-    if (event === EVENTS.PLAYLIST_ENDED) {
-      return handlePlaylistEnded();
+    console.log('payload: ', payload);
+    if (payload?.chatMsg && payload.listId === listId) {
+      setChatMessages((currentMsgs) => {
+        return currentMsgs.concat(payload?.chatMsg as unknown as UserChatMsg);
+      });
+    }
+
+    if (payload?.votes) {
+      handleVoteResults(payload?.votes);
     }
 
     if (payload.users) {
@@ -176,6 +221,14 @@ export default function VideoList() {
         url,
       };
 
+      const usernameExists =
+        usersData?.findIndex((u) => u.username === username) !== -1;
+
+      if (usernameExists) {
+        alert('Username already exists. Choose another username.');
+        return;
+      }
+
       sendMessage(EVENTS.ADD_USER, addUser);
 
       setUsername(usernameInForm);
@@ -189,16 +242,27 @@ export default function VideoList() {
 
     user.status = 'PENDING';
 
-    sendMessage(EVENTS.START_PLAYLIST, { listId, url: usersData?.[0].url });
+    sendMessage(EVENTS.START_PLAYLIST, { user });
   }
 
-  function handlePlaylistEnded() {
-    enqueueSnackbar(NOTIFICATIONS_MSG.PLAYLIST_ENDED, { variant: 'info' });
-    navigate(ROUTES.LIST_ENDED);
+  function handlePlaylistEnded(reason: string | undefined) {
+    handleUpdateList({
+      status: VIDEO_STATUS_TO_STATUS_LIST[VIDEO_STATUS.ENDED],
+    });
+
+    enqueueSnackbar(`${NOTIFICATIONS_MSG.PLAYLIST_ENDED}: ${reason}`, {
+      variant: 'info',
+    });
+    const endPath = generatePath(ROUTES.LIST_ENDED, { id: list });
+
+    navigate(endPath);
   }
 
-  function handleNotifications(event: string) {
+  function handleNotifications(event: string, payload: MessageResponse) {
     switch (event) {
+      case EVENTS.PLAYLIST_ENDED:
+        return handlePlaylistEnded(payload?.reason);
+
       case EVENTS.PLAYLIST_STARTED:
         enqueueSnackbar(NOTIFICATIONS_MSG.PLAYLIST_STARTED, {
           variant: 'success',
@@ -219,6 +283,34 @@ export default function VideoList() {
         break;
     }
   }
+
+  function onSubmitChatMsg(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    const message = formData.get('message') as string;
+
+    if (!message.length) {
+      alert('Message can not be empty!');
+      return;
+    }
+
+    sendMessage(EVENTS.SEND_CHAT_MSG, {
+      message,
+      username,
+    });
+  }
+
+  function handleVoteResults(votes: VoteUser[]) {
+    setUserVotes(votes);
+    setSendingVote(false);
+  }
+
+  function handleUserVote(vote: VOTES_TYPES) {
+    setSendingVote(true);
+    sendMessage(EVENTS.ADD_VOTE, { username, vote });
+  }
+
   return (
     <div className="h-screen">
       {isPending ? (
@@ -258,15 +350,30 @@ export default function VideoList() {
                   />
                   <FooterPlayer
                     handleVolumePlayer={handleVolumePlayer}
-                    videoTitle={videoData?.title || ''}
-                    author={videoData?.author || ''}
+                    videoTitle={(videoData?.title as string) || ''}
+                    author={(videoData?.author as string) || ''}
+                    duration={videoData?.duration as number}
+                    handleUserVote={handleUserVote}
+                    sendingVote={sendingVote}
+                    userVotes={userVotes}
+                    volume={volume}
+                    totalUsers={usersData?.length || 0}
+                    username={username}
                   />
-                  <Card className="w-1/2 mt-4 ml-4">
-                    <UserList
-                      users={usersData || []}
-                      username={username || ''}
-                    />
-                  </Card>
+                  <div className="flex">
+                    <Card className="w-1/2 mt-4 ml-4">
+                      <ChannelChat
+                        chatMessages={chatMessages}
+                        onSubmitChatMsg={onSubmitChatMsg}
+                      />
+                    </Card>
+                    <Card className="w-1/2 mt-4 mr-4">
+                      <UserList
+                        users={usersData || []}
+                        username={username || ''}
+                      />
+                    </Card>
+                  </div>
                 </>
               ) : (
                 <div className="flex justify-center items-center w-full">
