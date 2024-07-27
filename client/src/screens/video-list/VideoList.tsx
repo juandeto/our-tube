@@ -31,8 +31,6 @@ import { useSnackbar } from 'notistack';
 import ChannelChat from 'components/ChannelChat';
 import { calculateVotePercentages } from 'utils/utils';
 
-const WS_URL = (listId: string) => `ws://localhost:8080/ws?listId=${listId}`;
-
 export default function VideoList() {
   const navigate = useNavigate();
   const [username, setUsername] = useState<string | null>(null);
@@ -98,7 +96,7 @@ export default function VideoList() {
   }
 
   const { connectionStatus, sendMessage, webSocketReady } = useWebsockets({
-    URL: listId && WS_URL(listId),
+    listId,
     onMessageReceive: handleMessageReceived,
     enabled: Boolean(listId && list),
   });
