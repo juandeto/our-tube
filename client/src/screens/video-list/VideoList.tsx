@@ -148,8 +148,6 @@ export default function VideoList() {
       const repeatPercentageNumber = parseInt(repeatPercentage);
       const nextPercentageNumber = parseInt(nextPercentage);
 
-      console.log({ repeatPercentageNumber, nextPercentageNumber });
-
       if (nextPercentageNumber > 50 && isHost) {
         const user = usersData?.find((u) => u.username === username);
 
@@ -175,7 +173,6 @@ export default function VideoList() {
 
     handleNotifications(event, payload);
 
-    console.log('payload: ', payload);
     if (payload?.chatMsg && payload.listId === listId) {
       setChatMessages((currentMsgs) => {
         return currentMsgs.concat(payload?.chatMsg as unknown as UserChatMsg);
@@ -253,7 +250,7 @@ export default function VideoList() {
     enqueueSnackbar(`${NOTIFICATIONS_MSG.PLAYLIST_ENDED}: ${reason}`, {
       variant: 'info',
     });
-    const endPath = generatePath(ROUTES.LIST_ENDED, { id: list });
+    const endPath = generatePath(ROUTES.LIST_ENDED, { id: listId });
 
     navigate(endPath);
   }

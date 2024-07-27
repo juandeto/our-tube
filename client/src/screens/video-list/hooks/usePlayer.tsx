@@ -25,6 +25,8 @@ export default function usePlayer({
 
     const videoData = player.current.getVideoData();
 
+    console.log('video Data: ', videoData);
+
     const duration = Number(player?.current?.getDuration());
 
     setVideoData({ ...videoData, duration });
@@ -33,16 +35,6 @@ export default function usePlayer({
 
   function onPlayerStateChange(event: YouTubeEvent) {
     if (VIDEO_STATUS.ENDED === event.data) {
-      if (
-        usersData?.length &&
-        usersData[usersData.length - 1].url.includes(
-          videoData?.video_id as string
-        )
-      ) {
-        // playlist ended
-        console.log('video ended');
-      }
-
       onVideoEnd();
     }
   }
@@ -70,8 +62,6 @@ export default function usePlayer({
     const duration = Number(player?.current?.getDuration());
 
     setVideoData(() => ({ ...videoData, duration }));
-
-    console.log('videoData: ', videoData);
 
     player.current.seekTo(0);
     player.current.playVideo();

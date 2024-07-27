@@ -1,8 +1,9 @@
 import { GetVideoListParams, UpdateVideoListData } from 'typing/services';
 import { ListData } from 'typing/shared';
+import ENV from 'utils/constants';
 
 export async function createVideoList(body: ListData) {
-  const res = await fetch('http://localhost:8080/api/video-list', {
+  const res = await fetch(ENV.HTTP_API_URL + '/api/video-list', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -23,7 +24,7 @@ export async function createVideoList(body: ListData) {
 
 export async function getVideoList(params: GetVideoListParams) {
   const res = await fetch(
-    'http://localhost:8080/api/video-list' + '/' + params.id,
+    ENV.HTTP_API_URL + '/api/video-list' + '/' + params.id,
     {
       method: 'GET',
       headers: {
@@ -45,7 +46,7 @@ export async function getVideoList(params: GetVideoListParams) {
 
 export async function updateVideoList(payload: UpdateVideoListData) {
   const res = await fetch(
-    'http://localhost:8080/api/video-list' + '/' + payload.id,
+    ENV.HTTP_API_URL + '/api/video-list' + '/' + payload.id,
     {
       method: 'PUT',
       headers: {
@@ -67,7 +68,7 @@ export async function updateVideoList(payload: UpdateVideoListData) {
 }
 
 export async function deleteVideoList({ listId }: { listId: string }) {
-  const res = await fetch(`http://localhost:8080/api/video-list/${listId}`, {
+  const res = await fetch(ENV.HTTP_API_URL + `/api/video-list/${listId}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',

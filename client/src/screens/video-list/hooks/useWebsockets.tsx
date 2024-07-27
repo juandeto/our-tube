@@ -5,26 +5,28 @@ import {
   MessageResponse,
   WssEvent,
 } from 'typing/shared';
+import ENV from 'utils/constants';
 
 export default function useWebsockets({
-  URL,
+  listId,
   onMessageReceive,
   enabled,
 }: {
-  URL: string | undefined;
+  listId: string | undefined;
   onMessageReceive: (event: WssEvent<MessageResponse>) => void;
   enabled: boolean;
 }) {
+  const WS_URL = (listId: string) => `${ENV.WS_API_URL}/ws?listId=${listId}`;
   const webSocket = useRef<WebSocket | null>(null);
 
   const [webSocketReady, setWebSocketReady] = useState(false);
 
   useEffect(() => {
     const connectWebSocket = () => {
-      if (webSocket.current || !URL || !enabled) return;
+      if (webSocket.current || !URL || !enabled || !listId) return;
       console.log('run connectWebSocket');
 
-      webSocket.current = new WebSocket(URL);
+      webSocket.current = new WebSocket(WS_URL(listId));
 
       webSocket.current.onopen = () => {
         console.log('open');

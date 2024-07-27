@@ -25,3 +25,15 @@ export const NOTIFICATIONS_MSG = {
   PLAYLIST_ENDED: 'Playlist ended.',
   USER_OF_PLAYBACK_LOGOUT: 'User that added that video logged out.',
 };
+
+const httpProtocol = import.meta.env.PROD ? 'https://' : 'http://';
+
+const wsProtocol = 'ws://';
+
+const ENV = {
+  // Environments
+  HTTP_API_URL: httpProtocol + import.meta.env.VITE_API_URL,
+  WS_API_URL: wsProtocol + import.meta.env.VITE_API_URL,
+};
+
+export default ENV;

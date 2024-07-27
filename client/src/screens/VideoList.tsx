@@ -16,8 +16,9 @@ import { YouTubePlayer, YouTubeEvent, YouTubeProps } from 'react-youtube';
 import FooterPlayer from 'components/FooterPlayer';
 import UserList from 'components/UserList';
 import { Card } from 'components/Ui/Card';
+import ENV from 'utils/constants';
 
-const WS_URL = 'ws://localhost:8080/ws';
+const WS_URL = ENV.WS_API_URL;
 
 enum ReadyState {
   CONNECTING,
