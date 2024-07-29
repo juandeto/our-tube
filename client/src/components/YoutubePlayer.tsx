@@ -1,5 +1,5 @@
 import { YoutubePlayerProps } from 'typing/shared';
-import YouTube, { YouTubeEvent, YouTubeProps } from 'react-youtube';
+import YouTube, { YouTubeEvent } from 'react-youtube';
 import { getYoutubeVideoId } from 'utils/utils';
 
 export default function YoutubePlayer({

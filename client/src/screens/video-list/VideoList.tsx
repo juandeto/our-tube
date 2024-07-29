@@ -87,7 +87,7 @@ export default function VideoList() {
     updatePlayerTime,
     volume,
     handleRepeatVideo,
-  } = usePlayer({ usersData, onStartPlaying, onVideoEnd });
+  } = usePlayer({ onStartPlaying, onVideoEnd });
 
   const { title, subject } = list || {};
 

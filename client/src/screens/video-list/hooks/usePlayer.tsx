@@ -1,13 +1,10 @@
 import { YouTubePlayer, YouTubeEvent } from 'react-youtube';
 import { useState, useRef } from 'react';
-import { User } from 'typing/shared';
 import { VIDEO_STATUS } from 'utils/constants';
 export default function usePlayer({
-  usersData,
   onStartPlaying,
   onVideoEnd,
 }: {
-  usersData: User[] | null;
   onStartPlaying: () => void;
   onVideoEnd: () => void;
 }) {

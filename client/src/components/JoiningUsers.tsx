@@ -1,5 +1,4 @@
 import { User } from 'typing/shared';
-import { Avatar, AvatarFallback, AvatarImage } from './Ui/Avatar';
 import { Card, CardFooter, CardHeader, CardTitle } from './Ui/Card';
 import { Button } from './Ui/Button';
 import UserList from './UserList';

@@ -2,14 +2,11 @@ version: '3.8'
 
 
 services:
-
   postgres-db:
     image: postgres:15.3
     restart: always
-    environment:
-      POSTGRES_USER: postgres 
-      POSTGRES_DB: OURTUBE
-      POSTGRES_PASSWORD: 123456
+    env_file:
+      - services/${ENV_FILE}
     volumes:
       - ./services/postgres:/var/lib/postgresql/data
     ports:
@@ -19,20 +16,34 @@ services:
     container_name: backend
     build: 
       context: .
-      dockerfile: .services/Dockerfile
+      dockerfile: services/Dockerfile
     ports:
-      -8080:8080
+      - 8080:8080
     restart: on-failure
     depends_on:
-      - db
-      
+      - postgres-db
+    command: npm run start --host 0.0.0.
+    env_file:
+      - services/${ENV_FILE}
+
   frontend:
     container_name: frontend
     build:
       context: .
-      dockerfile: .client/Dockerfile
+      dockerfile: client/Dockerfile
     ports:
-      -5173:5173
+      - 3000:3000
     restart: on-failure
     depends_on:
-      - db
+      - postgres-db
+
+  proxy:
+    container_name: proxy
+    build: 
+      context: .
+      dockerfile: nginx/Dockerfile
+    restart: always
+    ports:
+      - 8084:80
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf

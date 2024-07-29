@@ -1,7 +1,5 @@
-import { useRef, useState } from 'react';
 import { Input } from './Ui/Input';
-import { Label } from './Ui/Label';
-import { Volume1, Volume, Volume2, VolumeX } from 'lucide-react';
+import { Volume1, Volume2, VolumeX } from 'lucide-react';
 import { Button } from './Ui/Button';
 
 export default function VolumeHandler({
