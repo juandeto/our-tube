@@ -18,13 +18,14 @@ services:
       context: .
       dockerfile: services/Dockerfile
     ports:
-      - 8080:8080
+      - 0.0.0.0:8080:8080
     restart: on-failure
     depends_on:
       - postgres-db
     command: npm run start --host 0.0.0.
     env_file:
       - services/${ENV_FILE}
+
 
   frontend:
     container_name: frontend
@@ -47,3 +48,6 @@ services:
       - 8084:80
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+    depends_on:
+      - backend
+      - frontend

@@ -26,7 +26,7 @@ export const NOTIFICATIONS_MSG = {
   USER_OF_PLAYBACK_LOGOUT: 'User that added that video logged out.',
 };
 
-const httpProtocol = import.meta.env.PROD ? 'https://' : 'http://';
+const httpProtocol = import.meta.env.PROD ? 'http://' : 'http://';
 
 const wsProtocol = 'ws://';
 
