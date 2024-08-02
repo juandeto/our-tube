@@ -6,7 +6,7 @@ services:
     image: postgres:15.3
     restart: always
     env_file:
-      - services/.env.development
+      - services/${ENV_FILE}
     volumes:
       - ./services/postgres:/var/lib/postgresql/data
     ports:
@@ -24,7 +24,7 @@ services:
       - postgres-db
     command: npm run start --host 0.0.0.
     env_file:
-      - services/.env.development
+      - services/${ENV_FILE}
 
 
   frontend:
