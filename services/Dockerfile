@@ -19,7 +19,7 @@ RUN npm install
 RUN npx prisma generate
 
 RUN --mount=type=secret,id=POSTGRES_PASSWORD \
-    sed -i "s/POSTGRES_PASSWORD=/POSTGRES_PASSWORD=$(cat /run/secrets/POSTGRES_PASSWORD)/" services/.env.production
+    sed -i "s/POSTGRES_PASSWORD=/POSTGRES_PASSWORD=$(cat /run/secrets/POSTGRES_PASSWORD)/" .env.production
 
 COPY /services/entrypoint.sh /usr/src/app/entrypoint.sh
 RUN chmod +x /usr/src/app/entrypoint.sh
