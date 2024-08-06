@@ -58,6 +58,9 @@ jobs:
 
         - name: Pull proxy image from docker hub
           run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/proxy:latest
+        
+        - name: Stop and remove existing containers
+          run: sudo docker-compose -f docker-compose.production.yml down
 
         - name: Build and Run Docker compose
           env: 
