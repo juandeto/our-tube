@@ -59,16 +59,11 @@ jobs:
         - name: Pull proxy image from docker hub
           run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/proxy:latest
 
-        - name: Build Docker compose
+        - name: Build and Run Docker compose
           env: 
             POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          run: sudo docker compose -f docker-compose.production.yml build --no-cache 
+          run: sudo docker compose -f docker-compose.production.yml up --build -d 
           timeout-minutes: 5
-        
-        - name: Build Docker compose
-          env: 
-            POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          run: sudo docker-compose -f docker-compose.production.yml up 
 
         - name: Print .env.production
           run: sudo cat services/.env.production
