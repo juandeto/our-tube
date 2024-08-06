@@ -25,6 +25,7 @@ jobs:
         file: services/Dockerfile
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
+        secrets: "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}"  
 
     - name: Build and push frontend image
       uses: docker/build-push-action@v3
@@ -47,18 +48,20 @@ jobs:
     steps:
         - name: Checkout code
           uses: actions/checkout@v4
+
         - name: Pull backend image from docker hub
           run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
+          
+
         - name: Pull frontend image from docker hub
           run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
+
         - name: Pull proxy image from docker hub
           run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/proxy:latest
-          
+
         - name: Build and Run Docker compose
           run: sudo docker compose -f docker-compose.production.yml up --build -d
           timeout-minutes: 5
-          env:
-            POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
         - name: Print .env.production
           run: sudo cat services/.env.production
