@@ -58,6 +58,9 @@ jobs:
           timeout-minutes: 5
           env:
             POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+
+        - name: Print .env.production
+          run: sudo cat services/.env.production
         
         - name: Remove stopped containers and unused images
           run: sudo docker system prune -a -f

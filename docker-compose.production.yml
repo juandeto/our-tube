@@ -12,10 +12,10 @@ services:
       - 0.0.0.0:8080:8080
     restart: on-failure
     command: npm run start --host 0.0.0.
-    env_file:
-      - services/.env.production
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    env_file:
+      - services/.env.production
 
 
   frontend:
