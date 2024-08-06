@@ -65,3 +65,4 @@ jobs:
     
         - name: Remove unused images
           run: docker image prune -f  # -f flag to force the prune
+          
