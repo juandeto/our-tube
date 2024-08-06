@@ -13,9 +13,12 @@ services:
     restart: on-failure
     command: npm run start --host 0.0.0.
     environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD_FILE=/run/secrets/POSTGRES_PASSWORD
     env_file:
       - services/.env.production
+    secrets:
+      - POSTGRES_PASSWORD
+
 
 
   frontend:
@@ -41,6 +44,8 @@ services:
       - backend
       - frontend
 
-
+secrets:
+  POSTGRES_PASSWORD:
+    file: ./secrets/postgres_password.txt
 
       

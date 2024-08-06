@@ -10,4 +10,5 @@ export const envs = {
   DB_PASSWORD: get('POSTGRES_PASSWORD').required(),
   DB_USER: get('POSTGRES_USER').required(),
   DB_NAME: get('POSTGRES_DB').required(),
+  POSTGRES_URL: `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DB}`,
 };
