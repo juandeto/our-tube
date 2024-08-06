@@ -17,7 +17,9 @@ export default function Landing() {
             <span className="px-4">{'{'}</span>
             <span className="px-4">{'}'}</span>
           </p>
-          <h1 className="text-primary text-6xl m-8">Out there in the woods</h1>{' '}
+          <h1 className="text-primary text-6xl m-8">
+            Out there in the woods...
+          </h1>{' '}
           <Button size="lg" onClick={navigateToLogin} className="text-xl">
             Start
           </Button>

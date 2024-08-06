@@ -1,0 +1,53 @@
+version: '3.8'
+
+
+services:
+  postgres-db:
+    image: postgres:15.3
+    restart: always
+    env_file:
+      - services/.env.development
+    volumes:
+      - ./services/postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+  
+  # backend:
+  #   container_name: backend
+  #   build: 
+  #     context: .
+  #     dockerfile: services/Dockerfile
+  #   ports:
+  #     - 0.0.0.0:8080:8080
+  #   restart: on-failure
+  #   depends_on:
+  #     - postgres-db
+  #   command: npm run start --host 0.0.0.
+  #   env_file:
+  #     - services/.env.development
+
+
+  # frontend:
+  #   container_name: frontend
+  #   build:
+  #     context: .
+  #     dockerfile: client/Dockerfile
+  #   ports:
+  #     - 3000:3000
+  #   restart: on-failure
+  #   depends_on:
+  #     - postgres-db
+
+  # proxy:
+  #   container_name: proxy
+  #   build: 
+  #     context: .
+  #     dockerfile: nginx/Dockerfile
+  #   restart: always
+  #   ports:
+  #     - 8084:80
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+  #   depends_on:
+  #     - backend
+  #     - frontend

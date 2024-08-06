@@ -1,7 +1,7 @@
 #!/bin/sh
 # entrypoint.sh
 
-npm prisma migrate deploy
+npm run prisma:migrate:prod
 
 # Start the application
 npm run start --host 0.0.0.0

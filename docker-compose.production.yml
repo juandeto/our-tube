@@ -2,15 +2,6 @@ version: '3.8'
 
 
 services:
-  postgres-db:
-    image: postgres:15.3
-    restart: always
-    env_file:
-      - services/${ENV_FILE}
-    volumes:
-      - ./services/postgres:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
   
   backend:
     container_name: backend
@@ -20,11 +11,11 @@ services:
     ports:
       - 0.0.0.0:8080:8080
     restart: on-failure
-    depends_on:
-      - postgres-db
     command: npm run start --host 0.0.0.
     env_file:
-      - services/${ENV_FILE}
+      - services/.env.production
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
 
   frontend:
@@ -35,8 +26,6 @@ services:
     ports:
       - 3000:3000
     restart: on-failure
-    depends_on:
-      - postgres-db
 
   proxy:
     container_name: proxy
@@ -45,9 +34,13 @@ services:
       dockerfile: nginx/Dockerfile
     restart: always
     ports:
-      - 8084:80
+      - 80:80
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
     depends_on:
       - backend
       - frontend
+
+
+
+      
