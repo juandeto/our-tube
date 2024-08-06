@@ -6,7 +6,7 @@ RUN apk add --no-cache openssl
 # Set the working directory
 WORKDIR /usr/src/app
 
-RUN --mount=type=secret,id=secret_1 \
+RUN --mount=type=secret,id=POSTGRES_PASSWORD \
     sed -i "s/POSTGRES_PASSWORD=/POSTGRES_PASSWORD=$(cat /run/secrets/POSTGRES_PASSWORD)/" .env.production
 
 
