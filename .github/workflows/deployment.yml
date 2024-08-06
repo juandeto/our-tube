@@ -47,22 +47,26 @@ jobs:
     steps:
         - name: Checkout code
           uses: actions/checkout@v4
+          
         - name: Pull backend image from docker hub
           run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
+
         - name: Pull frontend image from docker hub
           run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
+
         - name: Pull proxy image from docker hub
           run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/proxy:latest
+
         - name: Build Docker compose
-          run: sudo docker compose -f docker-compose.production.yml build
-          timeout-minutes: 5
+          run: docker compose -f docker-compose.production.yml build
           env:
             POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+
         - name: Run Docker compose
           run: sudo docker compose docker-compose.production.yml up -d
+
         - name: Remove stopped containers
           run: docker container prune -f  # -f flag to force the prune
     
         - name: Remove unused images
           run: docker image prune -f  # -f flag to force the prune
-          
