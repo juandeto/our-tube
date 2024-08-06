@@ -54,13 +54,10 @@ jobs:
         - name: Pull proxy image from docker hub
           run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/proxy:latest
         - name: Build and Run Docker compose
-          run: sudo docker compose -f docker-compose.production.yml up --build --no-cache -d
+          run: sudo docker compose -f docker-compose.production.yml up --build -d
           timeout-minutes: 5
           env:
             POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         
-        - name: Remove stopped containers
-          run: sudo docker container prune -f  # -f flag to force the prune
-    
-        - name: Remove unused images
-          run: sudo docker image prune -f  # -f flag to force the prune
+        - name: Remove stopped containers and unused images
+          run: sudo docker system prune -a -f
