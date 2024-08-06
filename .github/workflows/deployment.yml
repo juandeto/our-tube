@@ -53,6 +53,6 @@ jobs:
         - name: Pull proxy image from docker hub
           run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/proxy:latest
         - name: Run Docker compose
-          run: docker compose -f docker-compose.production.yml build --no-cache
+          run: sudo docker compose -f docker-compose.production.yml build --no-cache
           env:
             POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
