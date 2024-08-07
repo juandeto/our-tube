@@ -14,6 +14,8 @@ services:
     command: npm run start --host 0.0.0.
     env_file:
       - services/.env.production
+    volumes:
+      - services/db-secrets.sh
 
 
   frontend:

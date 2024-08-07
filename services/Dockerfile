@@ -19,6 +19,9 @@ RUN npm install
 RUN npx prisma generate
 
 COPY /services/entrypoint.sh /usr/src/app/entrypoint.sh
+
+RUN chmod +x /usr/src/app/db.sh
+
 RUN chmod +x /usr/src/app/entrypoint.sh
 
 # Expose the application port  
