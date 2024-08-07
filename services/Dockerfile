@@ -5,11 +5,6 @@ RUN apk add --no-cache openssl
 # Set the working directory
 WORKDIR /usr/src/app
 
-
-ARG POSTGRES_PASSWORD
-ENV POSTGRES_PASSWORD ${POSTGRES_PASSWORD}
-
-
 # Copy the rest of the application code
 COPY /services .
 
