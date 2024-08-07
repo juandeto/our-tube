@@ -15,7 +15,7 @@ services:
     env_file:
       - services/.env.production
     environment:
-      - POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
   frontend:
     container_name: frontend
     build:
