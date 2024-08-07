@@ -15,7 +15,7 @@ services:
     env_file:
       - services/.env.production
     volumes:
-      - /services/db-secrets.sh:/usr/src/app/db-secrets.sh
+      - ./services/db-secrets.sh:/usr/src/app/db-secrets.sh:ro
 
 
   frontend:
