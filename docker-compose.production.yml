@@ -14,8 +14,8 @@ services:
     command: npm run start --host 0.0.0.
     env_file:
       - services/.env.production
-    env:
-      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+    environment:
+      - POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
   frontend:
     container_name: frontend
     build:
