@@ -1,2 +1,2 @@
 
-echo POSTGRES_PASSWORD=''
+export POSTGRES_PASSWORD=value
