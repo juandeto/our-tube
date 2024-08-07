@@ -20,7 +20,6 @@ RUN . /usr/src/app/db-secrets.sh
 # Copy the rest of the application code
 COPY /services .
 
-
 # Install app dependencies
 RUN npm install
 
