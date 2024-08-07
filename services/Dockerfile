@@ -18,9 +18,11 @@ RUN npm install
 # Generate Prisma Client
 RUN npx prisma generate
 
-COPY /services/entrypoint.sh /usr/src/app/entrypoint.sh
+COPY /services/db-secrets.sh /usr/src/app/db-secrets.sh
 
-RUN chmod +x /usr/src/app/db.sh
+RUN chmod +x /usr/src/app/db-secrets.sh
+
+COPY /services/entrypoint.sh /usr/src/app/entrypoint.sh
 
 RUN chmod +x /usr/src/app/entrypoint.sh
 
