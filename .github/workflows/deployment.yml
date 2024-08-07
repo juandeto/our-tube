@@ -64,7 +64,7 @@ jobs:
           run: sudo docker-compose -f docker-compose.production.yml down
 
         - name: Build and Run Docker compose
-          run: sudo docker compose -f docker-compose.production.yml up --build -d 
+          run: sudo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} docker compose -f docker-compose.production.yml up --build -d 
           timeout-minutes: 5
 
         - name: Print .env.production
