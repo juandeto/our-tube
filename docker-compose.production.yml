@@ -14,9 +14,6 @@ services:
     command: npm run start --host 0.0.0.
     env_file:
       - services/.env.production
-    volumes:
-      - ./services/db-secrets.sh:/usr/src/app/db-secrets.sh:ro
-
 
   frontend:
     container_name: frontend

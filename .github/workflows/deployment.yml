@@ -24,7 +24,9 @@ jobs:
         context: .
         file: services/Dockerfile
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest 
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
+        build-args: |
+          "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}"
 
     - name: Build and push frontend image
       uses: docker/build-push-action@v3

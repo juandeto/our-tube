@@ -6,16 +6,14 @@ RUN apk add --no-cache openssl
 # Set the working directory
 WORKDIR /usr/src/app
 
-# Copy the secrets script and entrypoint script first
-COPY /services/db-secrets.sh /usr/src/app/db-secrets.sh
+ARG POSTGRES_PASSWORD
+ENV POSTGRES_PASSWORD ${POSTGRES_PASSWORD}
+
+# Copy the secrets script and entrypoint script first¿
 COPY /services/entrypoint.sh /usr/src/app/entrypoint.sh
 
 # Make the scripts executable
-RUN chmod +x /usr/src/app/db-secrets.sh /usr/src/app/entrypoint.sh
-
-# Source the db-secrets.sh script
-RUN . /usr/src/app/db-secrets.sh
-
+RUN  /usr/src/app/entrypoint.sh
 
 # Copy the rest of the application code
 COPY /services .
