@@ -1,6 +1,8 @@
 #!/bin/sh
 # entrypoint.sh
 
+. /usr/src/app/db-secrets.sh
+
 npm run prisma:migrate:prod
 
 # Start the application
