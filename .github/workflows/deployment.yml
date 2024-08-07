@@ -59,7 +59,7 @@ jobs:
           run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/proxy:latest
         
         - name: Stop and remove existing containers
-          run: sudo docker-compose -f docker-compose.production.yml down
+          run: sudo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} docker-compose -f docker-compose.production.yml down
 
         - name: Build and Run Docker compose
           run: sudo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} docker compose -f docker-compose.production.yml up --build -d 
