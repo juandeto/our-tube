@@ -1,10 +1,6 @@
 #!/bin/sh
 # entrypoint.sh
 
-. /usr/src/app/db-secrets.sh
-
-echo $POSTGRES_PASSWORD
-
 npm run prisma:migrate:prod
 
 # Start the application
