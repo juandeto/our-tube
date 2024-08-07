@@ -2,9 +2,12 @@ FROM node:20.11.1-alpine3.19 AS build
 
 # Install required packages
 RUN apk add --no-cache openssl
-
 # Set the working directory
 WORKDIR /usr/src/app
+
+
+ARG POSTGRES_PASSWORD
+ENV POSTGRES_PASSWORD ${POSTGRES_PASSWORD}
 
 
 # Copy the rest of the application code
