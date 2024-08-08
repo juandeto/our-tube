@@ -20,6 +20,5 @@ function main() {
 
   httpServer.listen(envs.PORT, () => {
     console.log(`Server running on port: ${envs.PORT}`);
-    console.log('DB in: ', process.env?.POSTGRES_URL);
   });
 }

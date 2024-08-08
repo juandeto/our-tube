@@ -5,6 +5,8 @@ import url from 'url';
 import { EVENTS } from '../../utils/events.utils';
 import { PlaybackService } from './playback.service';
 import { Playlist } from './playlist.service';
+import { setupPing } from '../../utils/app';
+import { WebSocketCustom } from '../../models/shared';
 
 interface Options {
   server: Server;
@@ -15,7 +17,8 @@ export class WssService {
   private static _instance: WssService;
   private wss: WebSocketServer;
   private playlistService: Playlist;
-  private clients: Record<string, WebSocket[]> = {};
+  private clients: Record<string, WebSocketCustom[]> = {};
+  private heartbeatInterval: NodeJS.Timeout | null = null;
 
   private constructor(options: Options) {
     const { server, path = '/ws' } = options; /// ws://localhost:3000/ws
@@ -58,38 +61,69 @@ export class WssService {
   }
 
   public start() {
-    this.wss.on('connection', (ws: WebSocket, request: IncomingMessage) => {
-      console.log('Client connected');
-      const { listId } = url.parse(request?.url || '', true).query;
+    this.wss.on(
+      'connection',
+      (ws: WebSocketCustom, request: IncomingMessage) => {
+        console.log('Client connected');
+        const { listId } = url.parse(request?.url || '', true).query;
 
-      if (!listId || typeof listId !== 'string') return;
+        if (!listId || typeof listId !== 'string') return;
 
-      if (!this.clients[listId]) {
-        this.clients[listId] = [ws];
-      } else {
-        this.clients[listId].push(ws);
-      }
-
-      this.onConnection(listId);
-
-      ws.on('message', (bytes) => {
-        const message = JSON.parse(bytes.toString());
-
-        this.onMessageReceived(listId, message);
-      });
-
-      ws.on('close', () => {
-        const index = this.clients[listId].indexOf(ws);
-
-        this.clients[listId].splice(index, 1);
-
-        if (this.clients[listId].length === 0) {
-          console.log(`Clients of list ${listId} deleted`);
-          delete this.clients[listId];
+        if (!this.clients[listId]) {
+          this.clients[listId] = [ws];
+        } else {
+          this.clients[listId].push(ws);
         }
 
-        console.log('Client disconnected');
+        ws.isAlive = true;
+
+        this.onConnection(listId);
+
+        ws.on('message', (bytes) => {
+          const message = JSON.parse(bytes.toString());
+
+          this.onMessageReceived(listId, message);
+        });
+
+        ws.on('pong', () => {
+          ws.isAlive = true;
+        });
+
+        ws.on('close', () => {
+          const index = this.clients[listId].indexOf(ws);
+
+          this.clients[listId].splice(index, 1);
+
+          if (this.clients[listId].length === 0) {
+            console.log(`Clients of list ${listId} deleted`);
+            delete this.clients[listId];
+          }
+
+          console.log('Client disconnected');
+        });
+      }
+    );
+
+    this.heartbeatInterval = setInterval(this.heartbeat.bind(this), 5000);
+  }
+
+  private heartbeat(): void {
+    this.wss.clients.forEach((ws) => {
+      const customWs = ws as WebSocketCustom;
+
+      if (!customWs.isAlive) return customWs.terminate();
+
+      customWs.isAlive = false;
+      customWs.ping(() => {
+        customWs.send('ping');
       });
     });
+  }
+
+  private stop(): void {
+    if (!this.heartbeatInterval) return;
+
+    clearInterval(this.heartbeatInterval);
+    this.wss.close();
   }
 }

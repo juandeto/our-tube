@@ -169,6 +169,8 @@ export default function VideoList() {
   function handleMessageReceived(msg: WssEvent<MessageResponse>) {
     const { payload, type: event } = msg;
 
+    console.log('msg: ', msg);
+
     handleNotifications(event, payload);
 
     if (payload?.chatMsg && payload.listId === listId) {

@@ -18,48 +18,74 @@ export default function useWebsockets({
 }) {
   const WS_URL = (listId: string) => `${ENV.WS_API_URL}/ws?listId=${listId}`;
   const webSocket = useRef<WebSocket | null>(null);
-
+  let timeout = 250;
   const [webSocketReady, setWebSocketReady] = useState(false);
 
-  useEffect(() => {
-    const connectWebSocket = () => {
-      if (webSocket.current || !URL || !enabled || !listId) return;
-      console.log('run connectWebSocket');
+  const check = () => {
+    if (!webSocket.current || webSocket.current.readyState == WebSocket.CLOSED)
+      connectWebSocket(); //check if websocket instance is closed, if so call `connect` function.
+  };
 
-      webSocket.current = new WebSocket(WS_URL(listId));
+  const connectWebSocket = () => {
+    if (webSocket.current || !enabled || !listId) return;
+    let connectInterval: ReturnType<typeof setTimeout>;
 
-      webSocket.current.onopen = () => {
-        console.log('open');
-        setWebSocketReady(true);
-      };
+    webSocket.current = new WebSocket(WS_URL(listId));
 
-      webSocket.current.onmessage = function (event) {
-        try {
-          const msg = JSON.parse(event.data);
+    webSocket.current.onopen = () => {
+      console.log('open');
+      setWebSocketReady(true);
 
-          onMessageReceive(msg);
-        } catch (error) {
-          console.error('Error parsing message', error);
-        }
-      };
-
-      webSocket.current.onclose = function () {
-        console.log('closing');
-        setWebSocketReady(false);
-      };
-
-      webSocket.current.onerror = function (err: Event) {
-        console.log('Socket encountered error: ', err, 'Closing socket');
-        setWebSocketReady(false);
-
-        if (webSocket.current && webSocket.current.readyState === 1) {
-          webSocket.current.close(1000, 'closing');
-        }
-      };
+      timeout = 250; // reset timer to 250 on open of websocket connection
+      clearTimeout(connectInterval); // clear Interval on on open of websocket connection
     };
 
+    webSocket.current.onmessage = function (event) {
+      if (event.data === 'ping') return;
+
+      try {
+        const msg = JSON.parse(event.data);
+
+        onMessageReceive(msg);
+      } catch (error) {
+        console.error('Error parsing message', error);
+      }
+    };
+
+    webSocket.current.onclose = function (e) {
+      console.log(
+        `Socket is closed. Reconnect will be attempted in ${Math.min(
+          10000 / 1000,
+          (timeout + timeout) / 1000
+        )} second.`,
+        e.reason
+      );
+
+      timeout = timeout + timeout; //increment retry interval
+      connectInterval = setTimeout(check, Math.min(10000, timeout)); //call check function after timeout
+      setWebSocketReady(false);
+    };
+
+    webSocket.current.onerror = function (err: Event) {
+      console.log('Socket encountered error: ', err, 'Closing socket');
+      setWebSocketReady(false);
+
+      if (webSocket.current && webSocket.current.readyState === 1) {
+        webSocket.current.close(1000, 'closing');
+      }
+    };
+  };
+
+  useEffect(() => {
     connectWebSocket();
-  }, [enabled, URL]);
+
+    return () => {
+      if (webSocket.current) {
+        webSocket.current.close();
+        webSocket.current = null;
+      }
+    };
+  }, [enabled, listId]);
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',

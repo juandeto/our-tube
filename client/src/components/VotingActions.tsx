@@ -22,9 +22,9 @@ export default function VotingThumbs({
 
   return (
     <div className="p-4">
-      <h4>Actions to vote</h4>
-      <div className="pt-4 flex gap-4 items-center">
-        <span>
+      <div className="pt-4 flex gap-4 items-center justify-center">
+        <span className="flex-col flex gap-1 items-center justify-center">
+          <h4>Repeat video</h4>
           <Button
             type="button"
             disabled={sendingVote}
@@ -42,7 +42,8 @@ export default function VotingThumbs({
             {percentages.repeatPercentage}%
           </p>
         </span>
-        <span>
+        <span className="flex-col flex gap-1 items-center justify-center">
+          <h4>Next Video</h4>
           <Button
             type="button"
             disabled={sendingVote}
@@ -61,6 +62,9 @@ export default function VotingThumbs({
           </p>
         </span>
       </div>
+      <span className="text-neutral-500">
+        (Action that gets more than 50% gets executed)
+      </span>
     </div>
   );
 }

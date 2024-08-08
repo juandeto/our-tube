@@ -8,7 +8,6 @@ WORKDIR /usr/src/app
 # Copy the rest of the application code
 COPY /services .
 
-
 # Install app dependencies
 RUN npm install
 
