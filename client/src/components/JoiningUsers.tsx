@@ -2,6 +2,7 @@ import { User } from 'typing/shared';
 import { Card, CardFooter, CardHeader, CardTitle } from './Ui/Card';
 import { Button } from './Ui/Button';
 import UserList from './UserList';
+import LocationToClipboardButton from './LocationToClipboardButton';
 
 export default function JoiningUsers({
   users,
@@ -30,9 +31,16 @@ export default function JoiningUsers({
             </p>
           </div>
         ) : (
-          <div className="pt-8 flex gap-3 items-center justify-end w-full">
-            <p>Wait for others and then</p>
-            <Button onClick={handleOnStart}>Start playing</Button>
+          <div className="pt-8 flex gap-3 items-center justify-between w-full">
+            <LocationToClipboardButton />
+            <div className="flex gap-1 items-center flex-col">
+              {users?.length < 2 && (
+                <p>You need at list two friends to go on</p>
+              )}
+              <Button disabled={users?.length < 2} onClick={handleOnStart}>
+                Start playing
+              </Button>
+            </div>
           </div>
         )}
       </CardFooter>

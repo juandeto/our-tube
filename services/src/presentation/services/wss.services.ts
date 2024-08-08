@@ -99,6 +99,8 @@ export class WssService {
             delete this.clients[listId];
           }
 
+          this.stop()
+
           console.log('Client disconnected');
         });
       }

@@ -1,3 +1,4 @@
+import { enqueueSnackbar } from 'notistack';
 import { useRef, useState, useEffect } from 'react';
 import {
   EVENTS_TYPE,
@@ -60,6 +61,10 @@ export default function useWebsockets({
         )} second.`,
         e.reason
       );
+
+      enqueueSnackbar('Conection lost...', {
+        variant: 'warning',
+      });
 
       timeout = timeout + timeout; //increment retry interval
       connectInterval = setTimeout(check, Math.min(10000, timeout)); //call check function after timeout

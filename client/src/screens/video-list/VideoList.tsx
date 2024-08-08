@@ -357,7 +357,7 @@ export default function VideoList() {
                     totalUsers={usersData?.length || 0}
                     username={username}
                   />
-                  <div className="flex">
+                  <div className="flex gap-2 flex-col lg:flex-row">
                     <Card className="w-1/2 mt-4 ml-4">
                       <ChannelChat
                         chatMessages={chatMessages}

@@ -44,7 +44,7 @@ export default function FooterPlayer({
   }, [duration]);
 
   return (
-    <Card className="border-[0.5px]  rounded-md flex m-4 justify-between">
+    <Card className="border-[0.5px]  rounded-md flex m-4 flex-col lg:flex-row lg:justify-between">
       <VolumeHandler volume={volume} handleVolumePlayer={handleVolumePlayer} />
       <div className="p-4">
         <h4 className="text-xl">Video data</h4>
