@@ -22,66 +22,55 @@ export default function useWebsockets({
   let timeout = 250;
   const [webSocketReady, setWebSocketReady] = useState(false);
 
-  const check = () => {
-    if (!webSocket.current || webSocket.current.readyState == WebSocket.CLOSED)
-      connectWebSocket(); //check if websocket instance is closed, if so call `connect` function.
-  };
-
-  const connectWebSocket = () => {
-    if (webSocket.current || !enabled || !listId) return;
-    let connectInterval: ReturnType<typeof setTimeout>;
-
-    webSocket.current = new WebSocket(WS_URL(listId));
-
-    webSocket.current.onopen = () => {
-      console.log('open');
-      setWebSocketReady(true);
-
-      timeout = 250; // reset timer to 250 on open of websocket connection
-      clearTimeout(connectInterval); // clear Interval on on open of websocket connection
-    };
-
-    webSocket.current.onmessage = function (event) {
-      if (event.data === 'ping') return;
-
-      try {
-        const msg = JSON.parse(event.data);
-
-        onMessageReceive(msg);
-      } catch (error) {
-        console.error('Error parsing message', error);
-      }
-    };
-
-    webSocket.current.onclose = function (e) {
-      console.log(
-        `Socket is closed. Reconnect will be attempted in ${Math.min(
-          10000 / 1000,
-          (timeout + timeout) / 1000
-        )} second.`,
-        e.reason
-      );
-
-      enqueueSnackbar('Conection lost...', {
-        variant: 'warning',
-      });
-
-      timeout = timeout + timeout; //increment retry interval
-      connectInterval = setTimeout(check, Math.min(10000, timeout)); //call check function after timeout
-      setWebSocketReady(false);
-    };
-
-    webSocket.current.onerror = function (err: Event) {
-      console.log('Socket encountered error: ', err, 'Closing socket');
-      setWebSocketReady(false);
-
-      if (webSocket.current && webSocket.current.readyState === 1) {
-        webSocket.current.close(1000, 'closing');
-      }
-    };
-  };
-
   useEffect(() => {
+    const connectWebSocket = () => {
+      if (webSocket.current || !enabled || !listId) return;
+      let connectInterval: ReturnType<typeof setTimeout>;
+
+      webSocket.current = new WebSocket(WS_URL(listId));
+
+      webSocket.current.onopen = () => {
+        console.log('open');
+        setWebSocketReady(true);
+
+        timeout = 250; // reset timer to 250 on open of websocket connection
+        clearTimeout(connectInterval); // clear Interval on on open of websocket connection
+      };
+
+      webSocket.current.onmessage = function (event) {
+        if (event.data === 'ping') return;
+
+        try {
+          const msg = JSON.parse(event.data);
+
+          onMessageReceive(msg);
+        } catch (error) {
+          console.error('Error parsing message', error);
+        }
+      };
+
+      webSocket.current.onclose = function (e) {
+        console.log(
+          `Socket is closed. Reconnect will be attempted in ${Math.min(
+            10000 / 1000,
+            (timeout + timeout) / 1000
+          )} second.`,
+          e.reason
+        );
+
+        enqueueSnackbar('Conection lost...', {
+          variant: 'warning',
+        });
+
+        setWebSocketReady(false);
+      };
+
+      webSocket.current.onerror = function (err: Event) {
+        console.log('Socket encountered error: ', err, 'Closing socket');
+        setWebSocketReady(false);
+      };
+    };
+
     connectWebSocket();
 
     return () => {

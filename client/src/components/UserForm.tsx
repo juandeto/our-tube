@@ -27,7 +27,7 @@ export default function UserForm({
           id="join-form"
         >
           <div className="p-3">
-            <Label htmlFor="username">What should people call you?</Label>
+            <Label htmlFor="username">How should people call you?</Label>
             <input
               type="text"
               name="username"

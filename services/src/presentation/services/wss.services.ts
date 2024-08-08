@@ -99,8 +99,6 @@ export class WssService {
             delete this.clients[listId];
           }
 
-          this.stop()
-
           console.log('Client disconnected');
         });
       }
@@ -120,12 +118,5 @@ export class WssService {
         customWs.send('ping');
       });
     });
-  }
-
-  private stop(): void {
-    if (!this.heartbeatInterval) return;
-
-    clearInterval(this.heartbeatInterval);
-    this.wss.close();
   }
 }
