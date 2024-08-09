@@ -6,6 +6,7 @@ export default function LocationToClipboardButton() {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
 
   function handleLinkCopied() {
+    console.log({ locationString: document.location.toString() });
     copyToClipboard(document.location.toString());
   }
 

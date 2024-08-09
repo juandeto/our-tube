@@ -31,7 +31,7 @@ export default function Login({
         >
           <div className="">
             <Label htmlFor="list-title" className="text-md">
-              Enter the title of your list
+              Enter the title of your channel
             </Label>
             <Input
               type="text"
@@ -41,7 +41,7 @@ export default function Login({
           </div>
           <div className="mt-6">
             <Label htmlFor="subject" className="text-md">
-              Enter the subject of your list
+              Enter the subject of your channe
             </Label>
             <Input
               type="text"
