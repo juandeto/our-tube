@@ -9,7 +9,7 @@ export default function UserList({
   username: string;
 }) {
   return (
-    <ul className="h-96 overflow-y-auto">
+    <ul className="min-h-16 md:h-48 xl:h-72 overflow-y-auto">
       <li className="border-b-2 border-gray-600 p-2 flex justify-between">
         <span className="text-xl text-gray-500 mr-6"></span>
         <span className="text-xl text-gray-500 mr-6">Username</span>

@@ -8,6 +8,7 @@ import {
 } from 'components/Ui/Card';
 import { Button } from './Ui/Button';
 import { Label } from './Ui/Label';
+import { Input } from './Ui/Input';
 
 export default function Login({
   onSubmit,
@@ -15,7 +16,7 @@ export default function Login({
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }) {
   return (
-    <Card className="shadow-lg bg-accent">
+    <Card className="shadow-lg bg-accent h-[70%] flex flex-col justify-center md:block md:h-auto">
       <CardHeader>
         <CardTitle className="text-3xl">Start your shared channel</CardTitle>
         <CardDescription>Let's begin choosing your list title</CardDescription>
@@ -28,27 +29,31 @@ export default function Login({
           }}
           id="login-form"
         >
-          <div className="p-3">
-            <Label htmlFor="list-title">Enter the title of your list</Label>
-            <input
+          <div className="">
+            <Label htmlFor="list-title" className="text-md">
+              Enter the title of your list
+            </Label>
+            <Input
               type="text"
               name="list-title"
-              className="rounded-md mx-2 p-3 text-black"
+              className="rounded-md  text-primary"
             />
           </div>
-          <div className="p-3">
-            <Label htmlFor="subject">Enter the subject of your list</Label>
-            <input
+          <div className="mt-6">
+            <Label htmlFor="subject" className="text-md">
+              Enter the subject of your list
+            </Label>
+            <Input
               type="text"
               name="subject"
-              className="rounded-md mx-2 p-3 text-black"
+              className="rounded-md  text-primary"
             />
           </div>
         </form>
       </CardContent>
-      <CardFooter className="p-4">
+      <CardFooter className="p-4 flex justify-center md:justify-end">
         <Button
-          variant="outline"
+          variant="default"
           type="submit"
           form="login-form"
           className="rounded-md bg-black text-white text-lg w-36 p-2 float-right"

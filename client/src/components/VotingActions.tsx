@@ -38,7 +38,13 @@ export default function VotingThumbs({
           >
             <Repeat />
           </Button>
-          <p className="py-1 text-center text-primary">
+          <p
+            className={`py-1 text-center text-primary ${
+              thisUserVote?.vote === VOTES_TYPES.REPEAT
+                ? 'text-green-400'
+                : 'text-primary'
+            }`}
+          >
             {percentages.repeatPercentage}%
           </p>
         </span>
@@ -57,7 +63,13 @@ export default function VotingThumbs({
           >
             <SkipForward />
           </Button>
-          <p className="py-1 text-center text-primary">
+          <p
+            className={`py-1 text-center text-primary ${
+              thisUserVote?.vote === VOTES_TYPES.NEXT
+                ? 'text-green-400'
+                : 'text-primary'
+            }`}
+          >
             {percentages.nextPercentage}%
           </p>
         </span>

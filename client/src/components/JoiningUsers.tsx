@@ -16,7 +16,7 @@ export default function JoiningUsers({
   isHost: boolean;
 }) {
   return (
-    <Card className="w-1/2 min-h-1/2 shadow-md rounded-md p-6">
+    <Card className="md:w-1/2 lg:min-h-1/2 shadow-md rounded-md md:p-6">
       <CardHeader>
         <CardTitle className="text-3xl text-gray-600 my-4">
           Users connecting...
@@ -31,7 +31,7 @@ export default function JoiningUsers({
             </p>
           </div>
         ) : (
-          <div className="pt-8 flex gap-3 items-center justify-between w-full">
+          <div className="pt-8 flex items-center justify-between w-full flex-col gap-6">
             <LocationToClipboardButton />
             <div className="flex gap-1 items-center flex-col">
               {users?.length < 2 && (

@@ -309,20 +309,21 @@ export default function VideoList() {
   }
 
   return (
-    <div className="h-screen">
+    <div className="h-[calc(100vh_-_5rem)]">
       {isPending ? (
         <p>Loading...</p>
       ) : (
         <>
-          <div className="flex p-2 flex-col justify-center items-center">
+          <div className="flex p-2 gap-4 flex-row justify-center items-center">
             {title && <h2 className="text-2xl text primary">{title}</h2>}
+            {' - '}
             {subject && <h3 className="text-xl text primary">{subject}</h3>}
           </div>
 
           {!usersData?.length ||
           hostUser?.status === STATUS_LIST.NOT_STARTED ||
           !username ? (
-            <div className="container  flex jusify-center items-center flex-col gap-6">
+            <div className="container h-[80%]  flex justify-center items-center flex-col gap-6">
               {!username ? (
                 <UserForm onSubmit={onSubmitNewUser} />
               ) : (
@@ -358,13 +359,13 @@ export default function VideoList() {
                     username={username}
                   />
                   <div className="flex gap-2 flex-col lg:flex-row">
-                    <Card className="w-1/2 mt-4 ml-4">
+                    <Card className="mx-4 lg:w-1/2 lg:mt-4 lg:ml-4">
                       <ChannelChat
                         chatMessages={chatMessages}
                         onSubmitChatMsg={onSubmitChatMsg}
                       />
                     </Card>
-                    <Card className="w-1/2 mt-4 mr-4">
+                    <Card className="mx-4 lg:w-1/2 lg:mt-4 lg:mr-4">
                       <UserList
                         users={usersData || []}
                         username={username || ''}

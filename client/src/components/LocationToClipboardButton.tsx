@@ -1,5 +1,6 @@
 import useCopyToClipboard from 'screens/video-list/hooks/useCopyToClipboard';
 import { Button } from './Ui/Button';
+import { Copy, Check } from 'lucide-react';
 
 export default function LocationToClipboardButton() {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
@@ -9,10 +10,10 @@ export default function LocationToClipboardButton() {
   }
 
   return (
-    <div className="flex gap-1 items-center flex-col">
-      <p>Share the link to your friends</p>
-      <Button onClick={handleLinkCopied}>
-        {isCopied ? 'Link copied!' : 'Copy link to clipboard'}
+    <div className="flex gap-1 items-center animate-pulse">
+      <p>Share the link!</p>
+      <Button onClick={handleLinkCopied} variant="link">
+        {isCopied ? <Check colorProfile={'green'} /> : <Copy />}
       </Button>
     </div>
   );

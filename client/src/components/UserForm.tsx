@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from './Ui/Card';
+import { Input } from './Ui/Input';
 import { Label } from './Ui/Label';
 
 export default function UserForm({
@@ -14,7 +15,7 @@ export default function UserForm({
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }) {
   return (
-    <Card className="bg-accent p-4 shadow-xl max-w-[40%]">
+    <Card className="shadow-lg bg-accent h-[70%] flex flex-col justify-center md:block md:h-auto">
       <CardHeader>
         <CardTitle>Join in</CardTitle>
       </CardHeader>
@@ -26,32 +27,34 @@ export default function UserForm({
           }}
           id="join-form"
         >
-          <div className="p-3">
-            <Label htmlFor="username">How should people call you?</Label>
-            <input
+          <div className="">
+            <Label htmlFor="username" className="text-md">
+              How should people call you?
+            </Label>
+            <Input
               type="text"
               name="username"
-              className="rounded-md mx-2 p-3 text-black"
+              className="rounded-md  text-primary"
             />
           </div>
-          <div className="p-3">
-            <Label htmlFor="url">
+          <div className="mt-6">
+            <Label htmlFor="url" className="text-md">
               Enter your favourite youtube video (url)
             </Label>
-            <input
+            <Input
               type="text"
               name="url"
-              className="rounded-md mx-2 p-3 text-black"
+              className="rounded-md  text-primary"
             />
           </div>
           <div className="p-4"></div>
         </form>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="p-4 flex justify-center md:justify-end">
         <Button
           type="submit"
           form="join-form"
-          className="rounded-md bg-black text-white text-lg w-36 p-2 float-right"
+          className="rounded-md bg-black text-white text-lg w-36 float-right"
         >
           Start
         </Button>

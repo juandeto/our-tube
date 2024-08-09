@@ -29,7 +29,7 @@ export default function Login() {
   }
 
   return (
-    <div className="h-screen flex justify-center items-center">
+    <div className="h-[calc(100vh_-_5rem)] flex justify-center items-center">
       <LoginForm onSubmit={onSubmit} />
     </div>
   );

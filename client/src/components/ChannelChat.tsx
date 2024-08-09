@@ -14,7 +14,7 @@ export default function ChannelChat({
 
   return (
     <div className="w-full">
-      <div className="h-96 overflow-y-auto bg-secondary shadow-inner px-2 pt-2">
+      <div className="min-h-48 md:h-96 overflow-y-auto bg-secondary shadow-inner px-2 pt-2">
         {chatMessages.map((msg, index) => (
           <p key={index} className="text-lg text-primary">
             <b>{msg.username}:</b> {msg.message}

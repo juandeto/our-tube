@@ -58,7 +58,7 @@ export default function useWebsockets({
           e.reason
         );
 
-        enqueueSnackbar('Conection lost...', {
+        enqueueSnackbar('Conection lost. Trying to reconnect...', {
           variant: 'warning',
         });
 
